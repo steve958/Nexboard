@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -8,9 +9,11 @@ const firebaseConfig = {
   projectId: "nexboard-99194",
   storageBucket: "nexboard-99194.appspot.com",
   messagingSenderId: "556054766353",
-  appId: "1:556054766353:web:9a53974ac4a2d0cc6fe2b0"
+  appId: "1:556054766353:web:9a53974ac4a2d0cc6fe2b0",
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+export const auth = getAuth(app);
 export const db = getFirestore(app);

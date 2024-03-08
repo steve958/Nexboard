@@ -1,11 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { Button, InputAdornment } from "@mui/material";
 import HttpsIcon from '@mui/icons-material/Https';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
+import { UserAuth } from "@/context/AuthContext";
+import { toast } from "react-toastify";
 
 export default function Register() {
+
+    const [email, setEmail] = useState<string>('')
+    const [password, setPassword] = useState<string>('')
+
+
+    const { signup } = UserAuth()
+
+    async function handleRegister(e: any) {
+        let response = ''
+        e.preventDefault()
+        try {
+            response = await signup(email, password)
+        } catch {
+            toast.error(response)
+        }
+    }
+
     return (
         <Box
             className="login-form"
@@ -22,6 +41,7 @@ export default function Register() {
             <TextField
                 id="outlined-basic1"
                 variant="outlined"
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="email"
                 InputProps={{
                     startAdornment: (
@@ -35,6 +55,7 @@ export default function Register() {
                 id="outlined-basic2"
                 variant="outlined"
                 type="text"
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="password"
                 InputProps={{
                     startAdornment: (
@@ -44,7 +65,7 @@ export default function Register() {
                     ),
                 }}
             />
-            <Button variant="contained" className="login-button">
+            <Button variant="contained" className="login-button" onClick={handleRegister}>
                 register
             </Button>
         </Box>
