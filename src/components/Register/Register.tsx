@@ -16,12 +16,18 @@ export default function Register() {
     const { signup } = UserAuth()
 
     async function handleRegister(e: any) {
+
         let response = ''
         e.preventDefault()
         try {
             response = await signup(email, password)
-        } catch {
-            toast.error(response)
+            toast.success('Registration successful')
+            setEmail('')
+            setPassword('')
+        } catch (e: any) {
+            setEmail('')
+            setPassword('')
+            toast.error(e.message)
         }
     }
 
@@ -43,6 +49,7 @@ export default function Register() {
                 variant="outlined"
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="email"
+                required
                 InputProps={{
                     startAdornment: (
                         <InputAdornment position="start">
@@ -54,6 +61,7 @@ export default function Register() {
             <TextField
                 id="outlined-basic2"
                 variant="outlined"
+                required
                 type="text"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="password"

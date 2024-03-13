@@ -6,19 +6,30 @@ import HttpsIcon from '@mui/icons-material/Https';
 import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { UserAuth } from "@/context/AuthContext";
 
 export default function Login() {
 
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
 
+    const { login } = UserAuth()
+
     const router = useRouter()
 
-    function handleLogin(e: any) {
+    async function handleLogin(e: any) {
         e.preventDefault()
-        console.log(email, password);
-        router.push('/dashboard')
 
+        let response = ''
+        try {
+            response = await login(email, password)
+            toast.success('Login successful', { position: 'top-center' })
+            router.push('/dashboard')
+            setEmail('')
+            setPassword('')
+        } catch (e: any) {
+            toast.error(e.message, { position: 'top-center' })
+        }
     }
 
     return (
