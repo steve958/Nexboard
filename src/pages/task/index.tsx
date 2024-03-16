@@ -16,22 +16,15 @@ import {
     Stack,
     TextField,
 } from "@mui/material";
-import { doc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
 import { toast } from "react-toastify";
-
-interface UserTask {
-    heading: string;
-    description: string;
-    estimation: number;
-    created: Date;
-    status: string;
-    completed: number;
-    id: number;
-}
+import { UserProject, UserTask } from "../dashboard";
+import CloseIcon from "@mui/icons-material/Close";
 
 export default function Task() {
     const [containerWidth, setContainerWidth] = useState(0);
+    const [deleteModalClicked, setDeleteModalClicked] = useState(false);
     const [userClicked, setUserClicked] = useState(false);
     const [taskDetails, setTaskDetails] = useState<UserTask>({} as UserTask);
 
@@ -62,6 +55,32 @@ export default function Task() {
         };
     }, []);
 
+
+    async function deleteTask() {
+        try {
+            const docSnap = await getDoc(getUserRef());
+            const projects = docSnap.data()?.projects;
+            let selected = projects.find(
+                (projectData: UserProject) => projectData.id === project
+            );
+            selected.tasks = selected.tasks.filter((task: UserTask) => task.id !== taskDetails.id)
+            let filtered = projects.filter(
+                (projectData: UserProject) => projectData.id !== project
+            );
+
+            await setDoc(getUserRef(), {
+                projects: [selected, ...filtered],
+            });
+            toast.success("Task is deleted!", { position: "top-center" });
+            setTaskDetails({} as UserTask)
+            router.push("/dashboard");
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.log(error);
+        }
+    }
+
+
     async function saveTask() {
         if (
             !taskDetails.description ||
@@ -72,8 +91,28 @@ export default function Task() {
             toast.error("Please fill all task details", { position: "top-center" });
             return;
         }
+        try {
+            const docSnap = await getDoc(getUserRef());
+            const projects = docSnap.data()?.projects;
+            let selected = projects.find(
+                (projectData: UserProject) => projectData.id === project
+            );
+            selected.tasks = selected.tasks.filter((task: UserTask) => task.id !== taskDetails.id)
+            selected.tasks.push(taskDetails)
+            let filtered = projects.filter(
+                (projectData: UserProject) => projectData.id !== project
+            );
 
-
+            await setDoc(getUserRef(), {
+                projects: [selected, ...filtered],
+            });
+            toast.success("Task is saved!", { position: "top-center" });
+            setTaskDetails({} as UserTask)
+            router.push("/dashboard");
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.log(error);
+        }
 
     }
 
@@ -123,6 +162,16 @@ export default function Task() {
         }
     };
 
+    const handleDeleteModalClick = (e: any) => {
+        if (e.target.className !== "delete-project-container" && deleteModalClicked)
+            return;
+        setDeleteModalClicked((clicked: boolean) => !clicked);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setDeleteModalClicked((clicked: boolean) => !clicked);
+    };
+
     const handleLogout = () => {
         logout();
         router.push("/");
@@ -130,6 +179,45 @@ export default function Task() {
 
     return (
         <div className="task-container" ref={ref}>
+            {deleteModalClicked && (
+                <div
+                    className="delete-project-container"
+                    onClick={handleDeleteModalClick}
+                >
+                    <div className="delete-project-wrapper">
+                        <h3>{`Are you sure you want to permanently delete this task?`}</h3>
+                        <Box
+                            component="form"
+                            sx={{
+                                "& > :not(style)": {
+                                    width: "100%",
+                                    display: "flex",
+                                },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <Stack spacing={2} direction="row">
+                                <Button
+                                    variant="contained"
+                                    className="delete-confirm-button"
+                                    onClick={deleteTask}
+                                >
+                                    delete task
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    className="delete-back-button"
+                                    onClick={handleCloseDeleteModal}
+                                >
+                                    return
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </div>
+                    <CloseIcon className="delete-task-icon icon" onClick={handleCloseDeleteModal} />
+                </div>
+            )}
             <ArrowBackIcon className="icon back-icon" onClick={handleBackButton} />
             <Image
                 src={dashboardImg}
@@ -241,7 +329,7 @@ export default function Task() {
                         >
                             save task
                         </Button>
-                        <Button variant="contained" className="delete-back-button">
+                        <Button variant="contained" className="delete-back-button" onClick={handleDeleteModalClick}>
                             delete task
                         </Button>
                     </Stack>

@@ -31,29 +31,29 @@ interface NewTask {
     estimation: number;
 }
 
-interface UserTask {
+export interface UserTask {
     heading: string;
     description: string;
     estimation: number;
     created: Date;
     status: string;
     completed: number;
-    id: number
+    id: number;
+    number: number;
 }
 
-interface UserProject {
+export interface UserProject {
     tasks: UserTask[];
     name: string;
     id: string;
 }
 
-interface UserData {
+export interface UserData {
     projects: UserProject[];
 }
 
 export default function Dashboard() {
-
-    const { handleSelectedTask, project, setProject } = UserAuth()
+    const { handleSelectedTask, project, setProject } = UserAuth();
 
     const ref = useRef<null | any>(null);
 
@@ -113,14 +113,18 @@ export default function Dashboard() {
             )?.id;
             if (!id) return;
             try {
+                const tasksLength = userData?.projects.find(
+                    (projectData: UserProject) => projectData.id === project
+                )?.tasks.length;
 
                 const newTask = {
                     ...newTaskDetails,
                     created: new Date().toDateString(),
-                    status: 'new',
+                    status: "new",
                     id: uuidv4(),
-                    completed: 0
-                }
+                    completed: 0,
+                    number: tasksLength ? tasksLength + 1 : 1,
+                };
 
                 const docSnap = await getDoc(getUserRef());
                 const projects = docSnap.data()?.projects;
@@ -165,6 +169,7 @@ export default function Dashboard() {
             });
             fetchUserData();
             handleCloseDeleteModal();
+            setProject('')
             toast.success("Project deleted", { position: "top-center" });
         } catch (error) { }
     }
@@ -201,11 +206,81 @@ export default function Dashboard() {
                 projects: [...oldProjects, { ...newProject }],
             });
             fetchUserData();
-
+            setProject('')
             toast.success("New project is added", { position: "top-center" });
+
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
         }
+    }
+
+    async function handleStatusChangeUp(e: any, task: UserTask) {
+        e.stopPropagation()
+
+        const taskDetails = task
+
+        if (taskDetails.status === 'new') {
+            taskDetails.status = 'active'
+        } else taskDetails.status = 'resolved'
+
+
+        try {
+            const docSnap = await getDoc(getUserRef());
+            const projects = docSnap.data()?.projects;
+            let selected = projects.find(
+                (projectData: UserProject) => projectData.id === project
+            );
+            selected.tasks = selected.tasks.filter((taskData: UserTask) => taskData.id !== task.id)
+            selected.tasks.push(taskDetails)
+            let filtered = projects.filter(
+                (projectData: UserProject) => projectData.id !== project
+            );
+
+            await setDoc(getUserRef(), {
+                projects: [selected, ...filtered],
+            });
+            toast.success("Status changed!", { position: "top-center" });
+            fetchUserData()
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.log(error);
+        }
+    }
+
+    async function handleStatusChangeDown(e: any, task: UserTask) {
+        e.stopPropagation()
+        const taskDetails = task
+
+        if (taskDetails.status === 'active') {
+            taskDetails.status = 'new'
+        } else taskDetails.status = 'active'
+
+
+        try {
+            const docSnap = await getDoc(getUserRef());
+            const projects = docSnap.data()?.projects;
+            let selected = projects.find(
+                (projectData: UserProject) => projectData.id === project
+            );
+            selected.tasks = selected.tasks.filter((taskData: UserTask) => taskData.id !== task.id)
+            selected.tasks.push(taskDetails)
+            let filtered = projects.filter(
+                (projectData: UserProject) => projectData.id !== project
+            );
+
+            await setDoc(getUserRef(), {
+                projects: [selected, ...filtered],
+            });
+            toast.success("Status changed!", { position: "top-center" });
+            fetchUserData()
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.log(error);
+        }
+    }
+
+    function taskHeadingCrop(heading: string) {
+        return heading.length > 30 ? heading.slice(0, 30).concat('...') : heading
     }
 
     function getUserRef() {
@@ -215,7 +290,8 @@ export default function Dashboard() {
 
     function getUsersProjectName() {
         return userData?.projects.find(
-            (projectData: UserProject) => projectData.id === project)?.name;
+            (projectData: UserProject) => projectData.id === project
+        )?.name;
     }
 
     const handleProjectClick = (e: any) => {
@@ -259,10 +335,11 @@ export default function Dashboard() {
         setUserClicked((cliked: boolean) => !cliked);
     };
 
-    const handleEditTask = (task: UserTask) => {
-        router.push(`/task`)
-        handleSelectedTask(task)
-    }
+    const handleEditTask = (task: UserTask, e: any) => {
+        router.push(`/task`);
+        handleSelectedTask(task);
+    };
+
 
     const handleNewTaskDetails = (value: string, property: string) => {
         switch (property) {
@@ -341,7 +418,7 @@ export default function Dashboard() {
                     onClick={handleDeleteModalClick}
                 >
                     <div className="delete-project-wrapper">
-                        <h3>{`Are you sure you want to permanently remove ${getUsersProjectName()}?`}</h3>
+                        <h3>{`Are you sure you want to permanently delete ${getUsersProjectName()}?`}</h3>
                         <Box
                             component="form"
                             sx={{
@@ -527,14 +604,25 @@ export default function Dashboard() {
                                 label="Select project"
                                 onChange={handleChange}
                             >
-                                {userData?.projects?.length > 0 ?
+                                {userData?.projects?.length > 0 ? (
                                     userData.projects?.map((project: UserProject) => {
                                         return (
                                             <MenuItem value={project.id} key={project.id}>
                                                 {project.name}
                                             </MenuItem>
                                         );
-                                    }) : <p style={{ padding: '10px', color: 'gray', cursor: 'not-allowed' }}>project list is empty</p>}
+                                    })
+                                ) : (
+                                    <p
+                                        style={{
+                                            padding: "10px",
+                                            color: "gray",
+                                            cursor: "not-allowed",
+                                        }}
+                                    >
+                                        project list is empty
+                                    </p>
+                                )}
                             </Select>
                         </FormControl>
                     </Box>
@@ -549,31 +637,62 @@ export default function Dashboard() {
                     ></Image>
                     <div className="new-container task">
                         <h1>New Tasks</h1>
-                        {userData?.projects?.find((projectData: UserProject) => projectData.id === project)?.tasks.map((task: UserTask) => {
-                            return (<div className="new-task-card" onClick={() => handleEditTask(task)} key={task.id}>
-                                <h3>#123 Task 1</h3>
-                                <RedoIcon className="icon task-icon-foward" />
-                                <h3 className="estimated">Estimated {task.estimation}h</h3>
-                            </div>)
-                        })}
-
+                        {userData?.projects
+                            ?.find((projectData: UserProject) => projectData.id === project)
+                            ?.tasks.filter((task: UserTask) => task.status === "new")
+                            .map((task: UserTask) => {
+                                return (
+                                    <div
+                                        className="new-task-card"
+                                        onClick={(e) => handleEditTask(task, e)}
+                                        key={task.id}
+                                        id="move"
+                                    >
+                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
+                                        <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
+                                        <h3 className="estimated">Estimated {task.estimation}h</h3>
+                                    </div>
+                                );
+                            })}
                     </div>
                     <div className="active-container task">
                         <h1>Active Tasks</h1>
-                        <div className="new-task-card">
-                            <h3>#123 Task 1</h3>
-                            <RedoIcon className="icon task-icon-foward" />
-                            <h3 className="estimated">Estimated 19h</h3>
-                            <RedoIcon className="icon task-icon-backward" />
-                        </div>
+                        {userData?.projects
+                            ?.find((projectData: UserProject) => projectData.id === project)
+                            ?.tasks.filter((task: UserTask) => task.status === "active")
+                            .map((task: UserTask) => {
+                                return (
+                                    <div
+                                        className="new-task-card"
+                                        onClick={(e) => handleEditTask(task, e)}
+                                        key={task.id}
+                                    >
+                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
+                                        <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
+                                        <h3 className="estimated">Estimated {task.estimation}h</h3>
+                                        <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
+                                    </div>
+                                );
+                            })}
                     </div>
                     <div className="resolved-container task">
                         <h1>Resolved Tasks</h1>
-                        <div className="new-task-card">
-                            <h3>#123 Task 1</h3>
-                            <RedoIcon className="icon task-icon-backward" />
-                            <h3 className="estimated">Estimated 19h</h3>
-                        </div>
+                        {userData?.projects
+                            ?.find((projectData: UserProject) => projectData.id === project)
+                            ?.tasks.filter((task: UserTask) => task.status === "resolved")
+                            .map((task: UserTask) => {
+                                return (
+                                    <div
+                                        className="new-task-card"
+                                        onClick={(e) => handleEditTask(task, e)}
+                                        key={task.id}
+                                    >
+                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
+                                        <h3 className="completed">Completed in {task.completed}h</h3>
+                                        <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
+                                    </div>
+                                );
+                            })}
                     </div>
                 </div>
             </div>

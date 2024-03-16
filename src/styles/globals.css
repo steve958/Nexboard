@@ -213,6 +213,10 @@
   max-height: 95%;
   overflow: auto;
   left: 35%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
   border-left: 5px solid #AFA37B;
   border-right: 5px solid #AFA37B;
 }
@@ -222,6 +226,10 @@
   left: 70%;
   max-height: 95%;
   overflow: auto;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .menu-icon {
@@ -277,17 +285,22 @@
   position: relative;
   filter: drop-shadow(2px 1px 2px #7e755a);
   cursor: pointer;
-  transition: all 0.5s;
+  transition: background 0.5s;
   z-index: 2;
   user-select: none;
 }
 
 .new-task-card:hover {
-  background-color: white;
+  /* background-color: white; */
+  filter: drop-shadow(4px 2px 4px #7e755a);
 }
 
 .estimated {
   color: #F54627;
+}
+
+.completed {
+  color: green;
 }
 
 .task-icon-foward {
@@ -504,6 +517,17 @@
   color: #7e755a;
 }
 
+.delete-task-icon {
+  position: absolute;
+  right: 80px;
+  top: 40px;
+}
+
+#move {
+  position: relative;
+  animation: new-active 4s linear 1;
+}
+
 @media only screen and (max-width:1300px) {
   .task>h1 {
     text-align: left;
@@ -674,6 +698,17 @@
     opacity: 1;
     width: 280px;
   }
+}
+
+@keyframes new-active {
+  /* 0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  } */
+
 }
 
 /* width */
