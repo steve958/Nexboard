@@ -11,13 +11,16 @@ import {
     SelectChangeEvent,
     Stack,
     TextField,
+    Tooltip,
 } from "@mui/material";
+import Zoom from '@mui/material/Zoom';
 import Face6Icon from "@mui/icons-material/Face6";
 import MenuIcon from "@mui/icons-material/Menu";
 import NorthIcon from "@mui/icons-material/North";
 import RedoIcon from "@mui/icons-material/Redo";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
+import InfoIcon from '@mui/icons-material/Info';
 import { UserAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
@@ -46,10 +49,18 @@ export interface UserProject {
     tasks: UserTask[];
     name: string;
     id: string;
+    userStory: string
 }
 
 export interface UserData {
     projects: UserProject[];
+}
+
+interface ProjectSummary {
+    totalTasks: number,
+    totalEstimation: number,
+    tasksCompleted: number,
+    estimationAcc: number
 }
 
 export default function Dashboard() {
@@ -63,7 +74,9 @@ export default function Dashboard() {
     const [menuClicked, setMenuClicked] = useState(false);
     const [userClicked, setUserClicked] = useState(false);
     const [newProjectClicked, setNewProjectClicked] = useState(false);
+    const [editProjectClicked, setEditProjectClicked] = useState(false);
     const [newProjectName, setNewProjectName] = useState("");
+    const [userStory, setUserStory] = useState('')
     const [deleteModalClicked, setDeleteModalClicked] = useState(false);
     const [newTaskClicked, setNewTaskClicked] = useState(false);
     const [newTaskDetails, setNewTaskDetails] = useState<NewTask>({
@@ -71,6 +84,13 @@ export default function Dashboard() {
         description: "",
         estimation: 0,
     });
+    const [projectSummary, setProjectSummary] = useState<ProjectSummary>({
+        totalTasks: 0,
+        totalEstimation: 0,
+        tasksCompleted: 0,
+        estimationAcc: 0
+    })
+
 
     const router = useRouter();
 
@@ -96,8 +116,26 @@ export default function Dashboard() {
     useEffect(() => {
         if (userData?.projects?.length > 0 && !project) {
             setProject(userData?.projects[userData.projects.length - 1]?.id);
+            generateProjectSummary(userData?.projects[userData.projects.length - 1]?.id)
+        } else {
+            generateProjectSummary(project)
         }
     }, [userData]);
+
+    useEffect(() => {
+        generateProjectSummary(project)
+    }, [project])
+
+    useEffect(() => {
+        if (editProjectClicked) {
+            const name = getUsersProjectName() ?? ''
+            const story = getUsersProjectStory() ?? ''
+            setUserStory(story)
+            setNewProjectName(name)
+        }
+    }, [editProjectClicked])
+
+    // api calls
 
     async function addNewTask() {
         if (
@@ -185,9 +223,39 @@ export default function Dashboard() {
         }
     }
 
+    async function editProject() {
+
+        if (!newProjectName || !userStory) {
+            toast.error("Please fill all project details", {
+                position: "top-center",
+            });
+            return;
+        }
+
+        try {
+            const docSnap = await getDoc(getUserRef());
+            const projects = docSnap.data()?.projects;
+            const editedProject = projects.find((projectData: UserProject) => projectData.id === project)
+            const projectDetails = { ...editedProject, name: newProjectName, userStory }
+            const filteredProjects = projects.filter((projectData: UserProject) => projectData.id !== project)
+            await setDoc(getUserRef(), {
+                projects: [...filteredProjects, { ...projectDetails }],
+            });
+            fetchUserData();
+            setNewProjectName('')
+            setUserStory('')
+            setEditProjectClicked(false)
+            toast.success("Project is saved!", { position: "top-center" });
+
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.error(error)
+        }
+    }
+
     async function addNewProject() {
-        if (!newProjectName) {
-            toast.error("Please fill the project name field", {
+        if (!newProjectName || !userStory) {
+            toast.error("Please fill all project details", {
                 position: "top-center",
             });
             return;
@@ -196,8 +264,10 @@ export default function Dashboard() {
             id: uuidv4(),
             name: newProjectName,
             tasks: [],
+            userStory
         };
         setNewProjectName("");
+        setUserStory('')
         setNewProjectClicked(false);
 
         try {
@@ -211,6 +281,7 @@ export default function Dashboard() {
 
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
+            console.error(error)
         }
     }
 
@@ -279,6 +350,21 @@ export default function Dashboard() {
         }
     }
 
+    // helpers
+
+    function generateProjectSummary(projectId: string) {
+        const singleProject = userData.projects?.find((projectData: UserProject) => projectData.id === projectId)
+        const totalTasks = singleProject?.tasks.length ?? 0
+        const totalEstimation = singleProject?.tasks.reduce((acc: number, current: UserTask) => acc + current.estimation, 0) ?? 0
+        const tasksCompleted = singleProject?.tasks.filter((task: UserTask) => task.status === 'resolved').length ?? 0
+        let estimationAcc = 0
+        const completedTime = singleProject?.tasks.filter((task: UserTask) => task.completed > 0)
+        completedTime?.forEach((task: UserTask) => {
+            estimationAcc += (task.estimation - task.completed)
+        })
+        setProjectSummary({ totalTasks, totalEstimation, tasksCompleted, estimationAcc });
+    }
+
     function taskHeadingCrop(heading: string) {
         return heading.length > 30 ? heading.slice(0, 30).concat('...') : heading
     }
@@ -289,16 +375,35 @@ export default function Dashboard() {
     }
 
     function getUsersProjectName() {
-        return userData?.projects.find(
+        return userData?.projects?.find(
             (projectData: UserProject) => projectData.id === project
         )?.name;
     }
 
+    function getUsersProjectStory() {
+        return userData?.projects?.find(
+            (projectData: UserProject) => projectData.id === project
+        )?.userStory;
+    }
+
+    // click event handlers
+
     const handleProjectClick = (e: any) => {
-        if (e.target.className !== "new-project-container" && newProjectClicked)
+        if (e.target.className !== "new-project-container" && newProjectClicked || (userStory || newProjectName))
             return;
         setNewProjectClicked((clicked: boolean) => !clicked);
     };
+
+    const handleEditProjectClick = (e: any) => {
+        if ((e.target.className !== 'new-project-container' && editProjectClicked) || (userStory || newProjectName)) return
+        setEditProjectClicked((clicked: boolean) => !clicked)
+    }
+
+    const handleCloseEditProjectClick = (e: any) => {
+        setUserStory('')
+        setNewProjectName('')
+        setEditProjectClicked((clicked: boolean) => !clicked)
+    }
 
     const handleDeleteModalClick = (e: any) => {
         if (e.target.className !== "delete-project-container" && deleteModalClicked)
@@ -307,11 +412,16 @@ export default function Dashboard() {
     };
 
     const handleNewTaskClick = (e: any) => {
-        if (e.target.className !== "new-task-container" && newTaskClicked) return;
+        if ((e.target.className !== "new-task-container" && newTaskClicked) || (newTaskDetails.description || newTaskDetails.heading)) return;
         setNewTaskClicked((clicked: boolean) => !clicked);
     };
 
     const handleCloseNewTask = () => {
+        setNewTaskDetails({
+            heading: "",
+            description: "",
+            estimation: 0,
+        })
         setNewTaskClicked((clicked: boolean) => !clicked);
     };
 
@@ -320,6 +430,8 @@ export default function Dashboard() {
     };
 
     const handleCloseProjectClick = (e: any) => {
+        setUserStory('')
+        setNewProjectName('')
         setNewProjectClicked((clicked: boolean) => !clicked);
     };
 
@@ -331,15 +443,22 @@ export default function Dashboard() {
         setMenuClicked((clicked: boolean) => !clicked);
     };
 
-    const handleUserClick = () => {
-        setUserClicked((cliked: boolean) => !cliked);
+    const handleUserClick = (e: any) => {
+        if (e.target.className !== "delete-project-container" && userClicked)
+            return;
+        setUserClicked((clicked: boolean) => !clicked);
     };
+
+    const handleUserCloseClick = () => {
+        setUserClicked((clicked: boolean) => !clicked)
+    }
 
     const handleEditTask = (task: UserTask, e: any) => {
         router.push(`/task`);
         handleSelectedTask(task);
     };
 
+    // user state handlers
 
     const handleNewTaskDetails = (value: string, property: string) => {
         switch (property) {
@@ -374,6 +493,45 @@ export default function Dashboard() {
             ref={ref}
             id={newProjectClicked ? "cover" : ""}
         >
+            {userClicked && (
+                <div
+                    className="delete-project-container"
+                    onClick={(e) => handleUserClick(e)}
+                >
+                    <div className="delete-project-wrapper">
+                        <h3>{`Are you sure you want to logout?`}</h3>
+                        <Box
+                            component="form"
+                            sx={{
+                                "& > :not(style)": {
+                                    width: "100%",
+                                    display: "flex",
+                                },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <Stack spacing={2} direction="row">
+                                <Button
+                                    variant="contained"
+                                    className="delete-confirm-button"
+                                    onClick={handleLogout}
+                                >
+                                    logout
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    className="delete-back-button"
+                                    onClick={handleUserCloseClick}
+                                >
+                                    return
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </div>
+                    <CloseIcon className="close-icon" onClick={handleUserCloseClick} />
+                </div>
+            )}
             {newProjectClicked && (
                 <div className="new-project-container" onClick={handleProjectClick}>
                     <div className="new-project-wrapper">
@@ -392,6 +550,8 @@ export default function Dashboard() {
                             <TextField
                                 id="outlined-basic4"
                                 variant="outlined"
+                                label='Project name'
+                                required
                                 onChange={(e) => setNewProjectName(e.target.value)}
                                 placeholder="e.g. web shop app"
                                 sx={{
@@ -400,13 +560,105 @@ export default function Dashboard() {
                                     },
                                 }}
                             />
-                            <Button
-                                variant="contained"
-                                className="login-button"
-                                onClick={addNewProject}
-                            >
-                                create project
-                            </Button>
+                            <TextField
+                                id="standard-multiline-flexible"
+                                className="project-user-story"
+                                variant="outlined"
+                                label="User story"
+                                required
+                                multiline
+                                onChange={(e) => setUserStory(e.target.value)}
+                                rows={12}
+                                placeholder="e.g. I want my web shop to have browsing through a variety of products conveniently categorized to find what I need quickly and easily. When I find a product I'm interested in, I want to see detailed information about it, including images, descriptions, and prices. If I'm unsure about a product, I want to be able to read reviews and see ratings from other users to help me make a decision."
+                                sx={{
+                                    "& > :not(style)": {
+                                        marginBottom: "10px",
+                                    },
+                                }}
+                            />
+                            <Stack spacing={2} direction="row">
+                                <Button
+                                    variant="contained"
+                                    className="login-button"
+                                    onClick={addNewProject}
+                                >
+                                    create project
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    className="login-button"
+                                    onClick={handleCloseProjectClick}
+                                >
+                                    return
+                                </Button>
+                            </Stack>
+                        </Box>
+                    </div>
+                    <CloseIcon className="close-icon" onClick={handleCloseProjectClick} />
+                </div>
+            )}
+            {editProjectClicked && (
+                <div className="new-project-container" onClick={handleEditProjectClick}>
+                    <div className="new-project-wrapper">
+                        <h3>Pick a name for the project</h3>
+                        <Box
+                            component="form"
+                            sx={{
+                                "& > :not(style)": {
+                                    width: "100%",
+                                    display: "flex",
+                                },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        >
+                            <TextField
+                                id="outlined-basic4"
+                                variant="outlined"
+                                label='Project name'
+                                required
+                                defaultValue={getUsersProjectName()}
+                                onChange={(e) => setNewProjectName(e.target.value)}
+                                placeholder="e.g. web shop app"
+                                sx={{
+                                    "& > :not(style)": {
+                                        marginBottom: "10px",
+                                    },
+                                }}
+                            />
+                            <TextField
+                                id="standard-multiline-flexible"
+                                className="project-user-story"
+                                variant="outlined"
+                                label="User story"
+                                required
+                                multiline
+                                defaultValue={getUsersProjectStory() ?? 'djoka'}
+                                onChange={(e) => setUserStory(e.target.value)}
+                                rows={12}
+                                placeholder="e.g. I want my web shop to have browsing through a variety of products conveniently categorized to find what I need quickly and easily. When I find a product I'm interested in, I want to see detailed information about it, including images, descriptions, and prices. If I'm unsure about a product, I want to be able to read reviews and see ratings from other users to help me make a decision."
+                                sx={{
+                                    "& > :not(style)": {
+                                        marginBottom: "10px",
+                                    },
+                                }}
+                            />
+                            <Stack spacing={2} direction="row">
+                                <Button
+                                    variant="contained"
+                                    className="login-button"
+                                    onClick={editProject}
+                                >
+                                    save project
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    className="login-button"
+                                    onClick={handleCloseEditProjectClick}
+                                >
+                                    return
+                                </Button>
+                            </Stack>
                         </Box>
                     </div>
                     <CloseIcon className="close-icon" onClick={handleCloseProjectClick} />
@@ -452,7 +704,7 @@ export default function Dashboard() {
                 </div>
             )}
             {newTaskClicked && (
-                <div className="new-task-container">
+                <div className="new-task-container" onClick={handleNewTaskClick}>
                     <div className="new-task-wrapper">
                         <h3>Fill task details</h3>
                         <Box
@@ -554,9 +806,9 @@ export default function Dashboard() {
                     <Button
                         variant="contained"
                         className="dashboard-button top-button"
-                        onClick={handleNewTaskClick}
+                        onClick={handleEditProjectClick}
                     >
-                        new task
+                        edit project
                     </Button>
                     <Button
                         variant="contained"
@@ -564,6 +816,13 @@ export default function Dashboard() {
                         onClick={handleDeleteModalClick}
                     >
                         delete project
+                    </Button>
+                    <Button
+                        variant="contained"
+                        className="dashboard-button top-button"
+                        onClick={handleNewTaskClick}
+                    >
+                        new task
                     </Button>
                 </div>
             )}
@@ -578,9 +837,9 @@ export default function Dashboard() {
                 <Button
                     variant="contained"
                     className="dashboard-button"
-                    onClick={handleNewTaskClick}
+                    onClick={handleEditProjectClick}
                 >
-                    new task
+                    edit project
                 </Button>
                 <Button
                     variant="contained"
@@ -589,6 +848,32 @@ export default function Dashboard() {
                 >
                     delete project
                 </Button>
+                <Button
+                    variant="contained"
+                    className="dashboard-button"
+                    onClick={handleNewTaskClick}
+                >
+                    new task
+                </Button>
+                <div className="summary-container">
+                    <h3>PROJECT SUMMARY</h3>
+                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                        <p>Total tasks:</p>
+                        <p>{projectSummary?.totalTasks}</p>
+                    </Stack>
+                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                        <p>Total estimation:</p>
+                        <p>{projectSummary?.totalEstimation} h</p>
+                    </Stack>
+                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                        <p>Tasks completed:</p>
+                        <p><span style={{ color: 'green' }}>{projectSummary?.tasksCompleted}</span> / {projectSummary?.totalTasks}</p>
+                    </Stack>
+                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                        <p>Estimation accuracy</p>
+                        <p className={projectSummary?.estimationAcc > 0 ? 'acc-plus' : 'acc-minus'}>{projectSummary?.estimationAcc ? `${projectSummary?.estimationAcc > 0 ? `+${projectSummary.estimationAcc}` : `${projectSummary.estimationAcc}`}` : '-'}</p>
+                    </Stack>
+                </div>
             </div>
             <div className="dashboard-central-wrapper">
                 <div className="central-input">
@@ -626,6 +911,9 @@ export default function Dashboard() {
                             </Select>
                         </FormControl>
                     </Box>
+                    <Tooltip title={<p className="tooltip-text">{getUsersProjectStory()}</p>} TransitionComponent={Zoom}>
+                        <InfoIcon className="tooltip-icon" />
+                    </Tooltip>
                 </div>
                 <div className="central-board">
                     <Image
@@ -651,6 +939,9 @@ export default function Dashboard() {
                                         <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
                                         <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
                                         <h3 className="estimated">Estimated {task.estimation}h</h3>
+                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
+                                            <InfoIcon className="tooltip-icon-task" />
+                                        </Tooltip>
                                     </div>
                                 );
                             })}
@@ -671,6 +962,9 @@ export default function Dashboard() {
                                         <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
                                         <h3 className="estimated">Estimated {task.estimation}h</h3>
                                         <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
+                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
+                                            <InfoIcon className="tooltip-icon-task" />
+                                        </Tooltip>
                                     </div>
                                 );
                             })}
@@ -690,6 +984,9 @@ export default function Dashboard() {
                                         <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
                                         <h3 className="completed">Completed in {task.completed}h</h3>
                                         <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
+                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
+                                            <InfoIcon className="tooltip-icon-task" />
+                                        </Tooltip>
                                     </div>
                                 );
                             })}
@@ -697,13 +994,7 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="dashboard-right-wrapper">
-                <Face6Icon className="icon" onClick={handleUserClick} />
-                {userClicked && (
-                    <div className="user-menu">
-                        <p>logout</p>
-                        <LogoutIcon className="icon" onClick={handleLogout} />
-                    </div>
-                )}
+                <LogoutIcon className="icon" onClick={(e) => handleUserClick(e)} />
             </div>
         </div>
     );

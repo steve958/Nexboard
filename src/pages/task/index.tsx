@@ -299,7 +299,7 @@ export default function Task() {
                                 handleTaskDetailsChange(e.target.value, "completed")
                             }
                             className="estimation-input"
-                            min={1}
+                            min={0}
                         />
                         <p>hours</p>
                     </span>

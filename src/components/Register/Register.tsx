@@ -21,13 +21,13 @@ export default function Register() {
         e.preventDefault()
         try {
             response = await signup(email, password)
-            toast.success('Registration successful')
+            toast.success('Registration successful', { position: 'top-center' })
             setEmail('')
             setPassword('')
         } catch (e: any) {
             setEmail('')
             setPassword('')
-            toast.error(e.message)
+            toast.error(e.message, { position: 'top-center' })
         }
     }
 
