@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { Button, InputAdornment } from "@mui/material";
@@ -8,7 +8,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { UserAuth } from "@/context/AuthContext";
 
-export default function Login() {
+interface LoginProps {
+    setLoading: React.Dispatch<SetStateAction<boolean>>
+}
+
+export default function Login(props: LoginProps) {
+
+    const { setLoading } = props
 
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
@@ -20,15 +26,17 @@ export default function Login() {
     async function handleLogin(e: any) {
         e.preventDefault()
 
-        let response = ''
         try {
-            response = await login(email, password)
+            setLoading(true)
+            await login(email, password)
             toast.success('Login successful', { position: 'top-center' })
             router.push('/dashboard')
             setEmail('')
             setPassword('')
+            setLoading(false)
         } catch (e: any) {
             toast.error(e.message, { position: 'top-center' })
+            setLoading(false)
         }
     }
 

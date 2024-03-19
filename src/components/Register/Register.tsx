@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import { Button, InputAdornment } from "@mui/material";
@@ -7,7 +7,13 @@ import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import { UserAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 
-export default function Register() {
+interface RegisterProps {
+    setLoading: React.Dispatch<SetStateAction<boolean>>
+}
+
+export default function Register(props: RegisterProps) {
+
+    const { setLoading } = props
 
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
@@ -16,18 +22,19 @@ export default function Register() {
     const { signup } = UserAuth()
 
     async function handleRegister(e: any) {
-
-        let response = ''
         e.preventDefault()
         try {
-            response = await signup(email, password)
+            setLoading(true)
+            await signup(email, password)
             toast.success('Registration successful', { position: 'top-center' })
             setEmail('')
             setPassword('')
+            setLoading(false)
         } catch (e: any) {
             setEmail('')
             setPassword('')
             toast.error(e.message, { position: 'top-center' })
+            setLoading(false)
         }
     }
 

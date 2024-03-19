@@ -14,7 +14,6 @@ import {
     Tooltip,
 } from "@mui/material";
 import Zoom from '@mui/material/Zoom';
-import Face6Icon from "@mui/icons-material/Face6";
 import MenuIcon from "@mui/icons-material/Menu";
 import NorthIcon from "@mui/icons-material/North";
 import RedoIcon from "@mui/icons-material/Redo";
@@ -27,6 +26,7 @@ import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
+import CircularIndeterminate from "@/components/Loader/Loader";
 
 interface NewTask {
     heading: string;
@@ -78,6 +78,7 @@ export default function Dashboard() {
     const [newProjectName, setNewProjectName] = useState("");
     const [userStory, setUserStory] = useState('')
     const [deleteModalClicked, setDeleteModalClicked] = useState(false);
+    const [loading, setLoading] = useState(false)
     const [newTaskClicked, setNewTaskClicked] = useState(false);
     const [newTaskDetails, setNewTaskDetails] = useState<NewTask>({
         heading: "",
@@ -94,6 +95,10 @@ export default function Dashboard() {
 
     const router = useRouter();
 
+    useEffect(() => {
+        if (user) fetchUserData();
+    }, [user]);
+
     useLayoutEffect(() => {
         window.addEventListener("resize", () => {
             if (ref.current) {
@@ -108,10 +113,6 @@ export default function Dashboard() {
             });
         };
     }, []);
-
-    useEffect(() => {
-        if (user) fetchUserData();
-    }, [user]);
 
     useEffect(() => {
         if (userData?.projects?.length > 0 && !project) {
@@ -151,6 +152,7 @@ export default function Dashboard() {
             )?.id;
             if (!id) return;
             try {
+                setLoading(true)
                 const tasksLength = userData?.projects.find(
                     (projectData: UserProject) => projectData.id === project
                 )?.tasks.length;
@@ -177,6 +179,7 @@ export default function Dashboard() {
                     projects: [selected, ...filtered],
                 });
                 toast.success("New task is added!", { position: "top-center" });
+                setLoading(false)
                 fetchUserData();
                 handleCloseNewTask();
                 setNewTaskDetails({
@@ -187,6 +190,7 @@ export default function Dashboard() {
             } catch (error) {
                 toast.error("Error occurred", { position: "top-center" });
                 console.log(error);
+                setLoading(false)
             }
         }
     }
@@ -197,6 +201,7 @@ export default function Dashboard() {
         )?.id;
         if (!id) return;
         try {
+            setLoading(true)
             const docSnap = await getDoc(getUserRef());
             const projects = docSnap.data()?.projects;
             const filtered = projects.filter(
@@ -208,8 +213,13 @@ export default function Dashboard() {
             fetchUserData();
             handleCloseDeleteModal();
             setProject('')
+            setLoading(false)
             toast.success("Project deleted", { position: "top-center" });
-        } catch (error) { }
+        } catch (error) {
+            toast.error("Error occurred", { position: "top-center" });
+            console.log(error);
+            setLoading(false)
+        }
     }
 
     async function fetchUserData() {
@@ -233,6 +243,7 @@ export default function Dashboard() {
         }
 
         try {
+            setLoading(true)
             const docSnap = await getDoc(getUserRef());
             const projects = docSnap.data()?.projects;
             const editedProject = projects.find((projectData: UserProject) => projectData.id === project)
@@ -245,11 +256,12 @@ export default function Dashboard() {
             setNewProjectName('')
             setUserStory('')
             setEditProjectClicked(false)
+            setLoading(false)
             toast.success("Project is saved!", { position: "top-center" });
-
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
             console.error(error)
+            setLoading(false)
         }
     }
 
@@ -271,6 +283,7 @@ export default function Dashboard() {
         setNewProjectClicked(false);
 
         try {
+            setLoading(true)
             const oldProjects = userData.projects ?? [];
             await setDoc(getUserRef(), {
                 projects: [...oldProjects, { ...newProject }],
@@ -278,10 +291,11 @@ export default function Dashboard() {
             fetchUserData();
             setProject('')
             toast.success("New project is added", { position: "top-center" });
-
+            setLoading(false)
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
             console.error(error)
+            setLoading(false)
         }
     }
 
@@ -857,21 +871,21 @@ export default function Dashboard() {
                 </Button>
                 <div className="summary-container">
                     <h3>PROJECT SUMMARY</h3>
-                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
                         <p>Total tasks:</p>
-                        <p>{projectSummary?.totalTasks}</p>
+                        <p><b>{projectSummary?.totalTasks}</b></p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
                         <p>Total estimation:</p>
-                        <p>{projectSummary?.totalEstimation} h</p>
+                        <p><b>{projectSummary?.totalEstimation} h</b></p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
                         <p>Tasks completed:</p>
-                        <p><span style={{ color: 'green' }}>{projectSummary?.tasksCompleted}</span> / {projectSummary?.totalTasks}</p>
+                        <p><span style={{ color: 'green' }}><b>{projectSummary?.tasksCompleted}</b></span> / <b>{projectSummary?.totalTasks}</b></p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='80%' justifyContent='space-between'>
+                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
                         <p>Estimation accuracy</p>
-                        <p className={projectSummary?.estimationAcc > 0 ? 'acc-plus' : 'acc-minus'}>{projectSummary?.estimationAcc ? `${projectSummary?.estimationAcc > 0 ? `+${projectSummary.estimationAcc}` : `${projectSummary.estimationAcc}`}` : '-'}</p>
+                        <p className={projectSummary?.estimationAcc > 0 ? 'acc-plus' : 'acc-minus'}>{projectSummary?.estimationAcc ? `${projectSummary?.estimationAcc > 0 ? `+${projectSummary.estimationAcc} h` : `${projectSummary.estimationAcc} h`}` : '-'}</p>
                     </Stack>
                 </div>
             </div>
@@ -923,7 +937,7 @@ export default function Dashboard() {
                         alt=""
                         loading="lazy"
                     ></Image>
-                    <div className="new-container task">
+                    {!loading ? <div className="new-container task">
                         <h1>New Tasks</h1>
                         {userData?.projects
                             ?.find((projectData: UserProject) => projectData.id === project)
@@ -945,8 +959,8 @@ export default function Dashboard() {
                                     </div>
                                 );
                             })}
-                    </div>
-                    <div className="active-container task">
+                    </div> : <CircularIndeterminate />}
+                    {!loading ? <div className="active-container task">
                         <h1>Active Tasks</h1>
                         {userData?.projects
                             ?.find((projectData: UserProject) => projectData.id === project)
@@ -968,8 +982,8 @@ export default function Dashboard() {
                                     </div>
                                 );
                             })}
-                    </div>
-                    <div className="resolved-container task">
+                    </div> : <CircularIndeterminate />}
+                    {!loading ? <div className="resolved-container task">
                         <h1>Resolved Tasks</h1>
                         {userData?.projects
                             ?.find((projectData: UserProject) => projectData.id === project)
@@ -990,7 +1004,7 @@ export default function Dashboard() {
                                     </div>
                                 );
                             })}
-                    </div>
+                    </div> : <CircularIndeterminate />}
                 </div>
             </div>
             <div className="dashboard-right-wrapper">

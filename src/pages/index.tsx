@@ -4,20 +4,21 @@ import landingImg from "../../public/logo_landing.png";
 import { useState } from "react";
 import Login from "../components/Login/Login";
 import Register from "../components/Register/Register";
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import InputIcon from "@mui/icons-material/Input";
 import { UserAuth } from "@/context/AuthContext";
+import CircularIndeterminate from "@/components/Loader/Loader";
 
 export default function Home() {
-
-  const { user } = UserAuth()
+  const { user } = UserAuth();
 
   const [login, setLogin] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   function handleLoginClick() {
     setTimeout(() => {
       setLogin(!login);
-    }, 100)
+    }, 100);
   }
 
   return (
@@ -31,9 +32,13 @@ export default function Home() {
       <main>
         <div className="landing-container">
           <div className="landing-left-wrapper">
-            {login ? <Login /> : <Register />}
+            {login ? (
+              <Login setLoading={setLoading} />
+            ) : (
+              <Register setLoading={setLoading} />
+            )}
           </div>
-          <div className="landing-right-wrapper">
+          {!loading && <div className="landing-right-wrapper">
             <Image src={landingImg} width={650} height={500} alt="" priority />
             {!login ? (
               <span className="icon-wrapper">
@@ -46,7 +51,8 @@ export default function Home() {
                 <p>Registracija</p>
               </span>
             )}
-          </div>
+          </div>}
+          {loading && <CircularIndeterminate />}
         </div>
       </main>
     </>
