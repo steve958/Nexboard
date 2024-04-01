@@ -13,13 +13,13 @@ import {
     TextField,
     Tooltip,
 } from "@mui/material";
-import Zoom from '@mui/material/Zoom';
+import Zoom from "@mui/material/Zoom";
 import MenuIcon from "@mui/icons-material/Menu";
 import NorthIcon from "@mui/icons-material/North";
 import RedoIcon from "@mui/icons-material/Redo";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
-import InfoIcon from '@mui/icons-material/Info';
+import InfoIcon from "@mui/icons-material/Info";
 import { UserAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
@@ -49,7 +49,7 @@ export interface UserProject {
     tasks: UserTask[];
     name: string;
     id: string;
-    userStory: string
+    userStory: string;
 }
 
 export interface UserData {
@@ -57,10 +57,10 @@ export interface UserData {
 }
 
 interface ProjectSummary {
-    totalTasks: number,
-    totalEstimation: number,
-    tasksCompleted: number,
-    estimationAcc: number
+    totalTasks: number;
+    totalEstimation: number;
+    tasksCompleted: number;
+    estimationAcc: number;
 }
 
 export default function Dashboard() {
@@ -76,9 +76,9 @@ export default function Dashboard() {
     const [newProjectClicked, setNewProjectClicked] = useState(false);
     const [editProjectClicked, setEditProjectClicked] = useState(false);
     const [newProjectName, setNewProjectName] = useState("");
-    const [userStory, setUserStory] = useState('')
+    const [userStory, setUserStory] = useState("");
     const [deleteModalClicked, setDeleteModalClicked] = useState(false);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
     const [newTaskClicked, setNewTaskClicked] = useState(false);
     const [newTaskDetails, setNewTaskDetails] = useState<NewTask>({
         heading: "",
@@ -89,9 +89,8 @@ export default function Dashboard() {
         totalTasks: 0,
         totalEstimation: 0,
         tasksCompleted: 0,
-        estimationAcc: 0
-    })
-
+        estimationAcc: 0,
+    });
 
     const router = useRouter();
 
@@ -117,24 +116,26 @@ export default function Dashboard() {
     useEffect(() => {
         if (userData?.projects?.length > 0 && !project) {
             setProject(userData?.projects[userData.projects.length - 1]?.id);
-            generateProjectSummary(userData?.projects[userData.projects.length - 1]?.id)
+            generateProjectSummary(
+                userData?.projects[userData.projects.length - 1]?.id
+            );
         } else {
-            generateProjectSummary(project)
+            generateProjectSummary(project);
         }
     }, [userData]);
 
     useEffect(() => {
-        generateProjectSummary(project)
-    }, [project])
+        generateProjectSummary(project);
+    }, [project]);
 
     useEffect(() => {
         if (editProjectClicked) {
-            const name = getUsersProjectName() ?? ''
-            const story = getUsersProjectStory() ?? ''
-            setUserStory(story)
-            setNewProjectName(name)
+            const name = getUsersProjectName() ?? "";
+            const story = getUsersProjectStory() ?? "";
+            setUserStory(story);
+            setNewProjectName(name);
         }
-    }, [editProjectClicked])
+    }, [editProjectClicked]);
 
     // api calls
 
@@ -152,7 +153,7 @@ export default function Dashboard() {
             )?.id;
             if (!id) return;
             try {
-                setLoading(true)
+                setLoading(true);
                 const tasksLength = userData?.projects.find(
                     (projectData: UserProject) => projectData.id === project
                 )?.tasks.length;
@@ -179,7 +180,7 @@ export default function Dashboard() {
                     projects: [selected, ...filtered],
                 });
                 toast.success("New task is added!", { position: "top-center" });
-                setLoading(false)
+                setLoading(false);
                 fetchUserData();
                 handleCloseNewTask();
                 setNewTaskDetails({
@@ -190,7 +191,7 @@ export default function Dashboard() {
             } catch (error) {
                 toast.error("Error occurred", { position: "top-center" });
                 console.log(error);
-                setLoading(false)
+                setLoading(false);
             }
         }
     }
@@ -201,7 +202,7 @@ export default function Dashboard() {
         )?.id;
         if (!id) return;
         try {
-            setLoading(true)
+            setLoading(true);
             const docSnap = await getDoc(getUserRef());
             const projects = docSnap.data()?.projects;
             const filtered = projects.filter(
@@ -212,13 +213,13 @@ export default function Dashboard() {
             });
             fetchUserData();
             handleCloseDeleteModal();
-            setProject('')
-            setLoading(false)
+            setProject("");
+            setLoading(false);
             toast.success("Project deleted", { position: "top-center" });
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
             console.log(error);
-            setLoading(false)
+            setLoading(false);
         }
     }
 
@@ -234,7 +235,6 @@ export default function Dashboard() {
     }
 
     async function editProject() {
-
         if (!newProjectName || !userStory) {
             toast.error("Please fill all project details", {
                 position: "top-center",
@@ -243,25 +243,33 @@ export default function Dashboard() {
         }
 
         try {
-            setLoading(true)
+            setLoading(true);
             const docSnap = await getDoc(getUserRef());
             const projects = docSnap.data()?.projects;
-            const editedProject = projects.find((projectData: UserProject) => projectData.id === project)
-            const projectDetails = { ...editedProject, name: newProjectName, userStory }
-            const filteredProjects = projects.filter((projectData: UserProject) => projectData.id !== project)
+            const editedProject = projects.find(
+                (projectData: UserProject) => projectData.id === project
+            );
+            const projectDetails = {
+                ...editedProject,
+                name: newProjectName,
+                userStory,
+            };
+            const filteredProjects = projects.filter(
+                (projectData: UserProject) => projectData.id !== project
+            );
             await setDoc(getUserRef(), {
                 projects: [...filteredProjects, { ...projectDetails }],
             });
             fetchUserData();
-            setNewProjectName('')
-            setUserStory('')
-            setEditProjectClicked(false)
-            setLoading(false)
+            setNewProjectName("");
+            setUserStory("");
+            setEditProjectClicked(false);
+            setLoading(false);
             toast.success("Project is saved!", { position: "top-center" });
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
-            console.error(error)
-            setLoading(false)
+            console.error(error);
+            setLoading(false);
         }
     }
 
@@ -276,38 +284,37 @@ export default function Dashboard() {
             id: uuidv4(),
             name: newProjectName,
             tasks: [],
-            userStory
+            userStory,
         };
         setNewProjectName("");
-        setUserStory('')
+        setUserStory("");
         setNewProjectClicked(false);
 
         try {
-            setLoading(true)
+            setLoading(true);
             const oldProjects = userData.projects ?? [];
             await setDoc(getUserRef(), {
                 projects: [...oldProjects, { ...newProject }],
             });
             fetchUserData();
-            setProject('')
+            setProject("");
             toast.success("New project is added", { position: "top-center" });
-            setLoading(false)
+            setLoading(false);
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
-            console.error(error)
-            setLoading(false)
+            console.error(error);
+            setLoading(false);
         }
     }
 
     async function handleStatusChangeUp(e: any, task: UserTask) {
-        e.stopPropagation()
+        e.stopPropagation();
 
-        const taskDetails = task
+        const taskDetails = task;
 
-        if (taskDetails.status === 'new') {
-            taskDetails.status = 'active'
-        } else taskDetails.status = 'resolved'
-
+        if (taskDetails.status === "new") {
+            taskDetails.status = "active";
+        } else taskDetails.status = "resolved";
 
         try {
             const docSnap = await getDoc(getUserRef());
@@ -315,8 +322,10 @@ export default function Dashboard() {
             let selected = projects.find(
                 (projectData: UserProject) => projectData.id === project
             );
-            selected.tasks = selected.tasks.filter((taskData: UserTask) => taskData.id !== task.id)
-            selected.tasks.push(taskDetails)
+            selected.tasks = selected.tasks.filter(
+                (taskData: UserTask) => taskData.id !== task.id
+            );
+            selected.tasks.push(taskDetails);
             let filtered = projects.filter(
                 (projectData: UserProject) => projectData.id !== project
             );
@@ -325,7 +334,7 @@ export default function Dashboard() {
                 projects: [selected, ...filtered],
             });
             toast.success("Status changed!", { position: "top-center" });
-            fetchUserData()
+            fetchUserData();
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
             console.log(error);
@@ -333,13 +342,12 @@ export default function Dashboard() {
     }
 
     async function handleStatusChangeDown(e: any, task: UserTask) {
-        e.stopPropagation()
-        const taskDetails = task
+        e.stopPropagation();
+        const taskDetails = task;
 
-        if (taskDetails.status === 'active') {
-            taskDetails.status = 'new'
-        } else taskDetails.status = 'active'
-
+        if (taskDetails.status === "active") {
+            taskDetails.status = "new";
+        } else taskDetails.status = "active";
 
         try {
             const docSnap = await getDoc(getUserRef());
@@ -347,8 +355,10 @@ export default function Dashboard() {
             let selected = projects.find(
                 (projectData: UserProject) => projectData.id === project
             );
-            selected.tasks = selected.tasks.filter((taskData: UserTask) => taskData.id !== task.id)
-            selected.tasks.push(taskDetails)
+            selected.tasks = selected.tasks.filter(
+                (taskData: UserTask) => taskData.id !== task.id
+            );
+            selected.tasks.push(taskDetails);
             let filtered = projects.filter(
                 (projectData: UserProject) => projectData.id !== project
             );
@@ -357,7 +367,7 @@ export default function Dashboard() {
                 projects: [selected, ...filtered],
             });
             toast.success("Status changed!", { position: "top-center" });
-            fetchUserData()
+            fetchUserData();
         } catch (error) {
             toast.error("Error occurred", { position: "top-center" });
             console.log(error);
@@ -367,27 +377,50 @@ export default function Dashboard() {
     // helpers
 
     function generateProjectSummary(projectId: string) {
-        const singleProject = userData.projects?.find((projectData: UserProject) => projectData.id === projectId)
-        const totalTasks = singleProject?.tasks.length ?? 0
-        const totalEstimation = singleProject?.tasks.reduce((acc: number, current: UserTask) => acc + current.estimation, 0) ?? 0
-        const tasksCompleted = singleProject?.tasks.filter((task: UserTask) => task.status === 'resolved').length ?? 0
-        let estimationAcc = 0
-        const completedTime = singleProject?.tasks.filter((task: UserTask) => task.completed > 0)
+        const singleProject = userData.projects?.find(
+            (projectData: UserProject) => projectData.id === projectId
+        );
+        const totalTasks = singleProject?.tasks.length ?? 0;
+        const totalEstimation =
+            singleProject?.tasks.reduce(
+                (acc: number, current: UserTask) => acc + current.estimation,
+                0
+            ) ?? 0;
+        const tasksCompleted =
+            singleProject?.tasks.filter(
+                (task: UserTask) => task.status === "resolved"
+            ).length ?? 0;
+        let estimationAcc = 0;
+        const completedTime = singleProject?.tasks.filter(
+            (task: UserTask) => task.completed > 0
+        );
         completedTime?.forEach((task: UserTask) => {
-            estimationAcc += (task.estimation - task.completed)
-        })
-        setProjectSummary({ totalTasks, totalEstimation, tasksCompleted, estimationAcc });
+            estimationAcc += task.estimation - task.completed;
+        });
+        setProjectSummary({
+            totalTasks,
+            totalEstimation,
+            tasksCompleted,
+            estimationAcc,
+        });
     }
 
     function getTaskEstimationAcc(task: UserTask) {
-        const estimationAcc = task.estimation - task.completed
+        const estimationAcc = task.estimation - task.completed;
         if (task.completed) {
-            return estimationAcc > 0 ? `(+${estimationAcc})` : `(${estimationAcc})`
-        } return ''
+            return estimationAcc > 0 ? (
+                <span className="acc-plus">{`(+${estimationAcc})`}</span>
+            ) : estimationAcc === 0 ? (
+                <span className="acc-zero">{`(${estimationAcc})`}</span>
+            ) : (
+                <span className="acc-minus">{`(${estimationAcc})`}</span>
+            );
+        }
+        return "";
     }
 
     function taskHeadingCrop(heading: string) {
-        return heading.length > 30 ? heading.slice(0, 30).concat('...') : heading
+        return heading.length > 30 ? heading.slice(0, 30).concat("...") : heading;
     }
 
     function getUserRef() {
@@ -410,21 +443,30 @@ export default function Dashboard() {
     // click event handlers
 
     const handleProjectClick = (e: any) => {
-        if (e.target.className !== "new-project-container" && newProjectClicked || (userStory || newProjectName))
+        if (
+            (e.target.className !== "new-project-container" && newProjectClicked) ||
+            userStory ||
+            newProjectName
+        )
             return;
         setNewProjectClicked((clicked: boolean) => !clicked);
     };
 
     const handleEditProjectClick = (e: any) => {
-        if ((e.target.className !== 'new-project-container' && editProjectClicked) || (userStory || newProjectName)) return
-        setEditProjectClicked((clicked: boolean) => !clicked)
-    }
+        if (
+            (e.target.className !== "new-project-container" && editProjectClicked) ||
+            userStory ||
+            newProjectName
+        )
+            return;
+        setEditProjectClicked((clicked: boolean) => !clicked);
+    };
 
     const handleCloseEditProjectClick = (e: any) => {
-        setUserStory('')
-        setNewProjectName('')
-        setEditProjectClicked((clicked: boolean) => !clicked)
-    }
+        setUserStory("");
+        setNewProjectName("");
+        setEditProjectClicked((clicked: boolean) => !clicked);
+    };
 
     const handleDeleteModalClick = (e: any) => {
         if (e.target.className !== "delete-project-container" && deleteModalClicked)
@@ -433,7 +475,12 @@ export default function Dashboard() {
     };
 
     const handleNewTaskClick = (e: any) => {
-        if ((e.target.className !== "new-task-container" && newTaskClicked) || (newTaskDetails.description || newTaskDetails.heading)) return;
+        if (
+            (e.target.className !== "new-task-container" && newTaskClicked) ||
+            newTaskDetails.description ||
+            newTaskDetails.heading
+        )
+            return;
         setNewTaskClicked((clicked: boolean) => !clicked);
     };
 
@@ -442,7 +489,7 @@ export default function Dashboard() {
             heading: "",
             description: "",
             estimation: 0,
-        })
+        });
         setNewTaskClicked((clicked: boolean) => !clicked);
     };
 
@@ -451,8 +498,8 @@ export default function Dashboard() {
     };
 
     const handleCloseProjectClick = (e: any) => {
-        setUserStory('')
-        setNewProjectName('')
+        setUserStory("");
+        setNewProjectName("");
         setNewProjectClicked((clicked: boolean) => !clicked);
     };
 
@@ -471,8 +518,8 @@ export default function Dashboard() {
     };
 
     const handleUserCloseClick = () => {
-        setUserClicked((clicked: boolean) => !clicked)
-    }
+        setUserClicked((clicked: boolean) => !clicked);
+    };
 
     const handleEditTask = (task: UserTask, e: any) => {
         router.push(`/task`);
@@ -571,7 +618,7 @@ export default function Dashboard() {
                             <TextField
                                 id="outlined-basic4"
                                 variant="outlined"
-                                label='Project name'
+                                label="Project name"
                                 required
                                 onChange={(e) => setNewProjectName(e.target.value)}
                                 placeholder="e.g. web shop app"
@@ -636,7 +683,7 @@ export default function Dashboard() {
                             <TextField
                                 id="outlined-basic4"
                                 variant="outlined"
-                                label='Project name'
+                                label="Project name"
                                 required
                                 defaultValue={getUsersProjectName()}
                                 onChange={(e) => setNewProjectName(e.target.value)}
@@ -654,7 +701,7 @@ export default function Dashboard() {
                                 label="User story"
                                 required
                                 multiline
-                                defaultValue={getUsersProjectStory() ?? 'djoka'}
+                                defaultValue={getUsersProjectStory() ?? "djoka"}
                                 onChange={(e) => setUserStory(e.target.value)}
                                 rows={12}
                                 placeholder="e.g. I want my web shop to have browsing through a variety of products conveniently categorized to find what I need quickly and easily. When I find a product I'm interested in, I want to see detailed information about it, including images, descriptions, and prices. If I'm unsure about a product, I want to be able to read reviews and see ratings from other users to help me make a decision."
@@ -878,21 +925,61 @@ export default function Dashboard() {
                 </Button>
                 <div className="summary-container">
                     <h3>PROJECT SUMMARY</h3>
-                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
+                    <Stack
+                        spacing={2}
+                        direction="row"
+                        width="85%"
+                        justifyContent="space-between"
+                    >
                         <p>Total tasks:</p>
-                        <p><b>{projectSummary?.totalTasks}</b></p>
+                        <p>
+                            <b>{projectSummary?.totalTasks}</b>
+                        </p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
+                    <Stack
+                        spacing={2}
+                        direction="row"
+                        width="85%"
+                        justifyContent="space-between"
+                    >
                         <p>Total estimation:</p>
-                        <p><b>{projectSummary?.totalEstimation} h</b></p>
+                        <p>
+                            <b>{projectSummary?.totalEstimation} h</b>
+                        </p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
+                    <Stack
+                        spacing={2}
+                        direction="row"
+                        width="85%"
+                        justifyContent="space-between"
+                    >
                         <p>Tasks completed:</p>
-                        <p><span style={{ color: 'green' }}><b>{projectSummary?.tasksCompleted}</b></span> / <b>{projectSummary?.totalTasks}</b></p>
+                        <p>
+                            <span style={{ color: "green" }}>
+                                <b>{projectSummary?.tasksCompleted}</b>
+                            </span>{" "}
+                            / <b>{projectSummary?.totalTasks}</b>
+                        </p>
                     </Stack>
-                    <Stack spacing={2} direction="row" width='85%' justifyContent='space-between'>
+                    <Stack
+                        spacing={2}
+                        direction="row"
+                        width="85%"
+                        justifyContent="space-between"
+                    >
                         <p>Estimation accuracy</p>
-                        <p className={projectSummary?.estimationAcc > 0 ? 'acc-plus' : 'acc-minus'}>{projectSummary?.estimationAcc ? `${projectSummary?.estimationAcc > 0 ? `+${projectSummary.estimationAcc} h` : `${projectSummary.estimationAcc} h`}` : '-'}</p>
+                        <p
+                            className={
+                                projectSummary?.estimationAcc > 0 ? "acc-plus" : "acc-minus"
+                            }
+                        >
+                            {projectSummary?.estimationAcc
+                                ? `${projectSummary?.estimationAcc > 0
+                                    ? `+${projectSummary.estimationAcc} h`
+                                    : `${projectSummary.estimationAcc} h`
+                                }`
+                                : "-"}
+                        </p>
                     </Stack>
                 </div>
             </div>
@@ -932,7 +1019,10 @@ export default function Dashboard() {
                             </Select>
                         </FormControl>
                     </Box>
-                    <Tooltip title={<p className="tooltip-text">{getUsersProjectStory()}</p>} TransitionComponent={Zoom}>
+                    <Tooltip
+                        title={<p className="tooltip-text">{getUsersProjectStory()}</p>}
+                        TransitionComponent={Zoom}
+                    >
                         <InfoIcon className="tooltip-icon" />
                     </Tooltip>
                 </div>
@@ -944,74 +1034,128 @@ export default function Dashboard() {
                         alt=""
                         loading="lazy"
                     ></Image>
-                    {!loading ? <div className="new-container task">
-                        <h1>New Tasks</h1>
-                        {userData?.projects
-                            ?.find((projectData: UserProject) => projectData.id === project)
-                            ?.tasks.filter((task: UserTask) => task.status === "new")
-                            .map((task: UserTask) => {
-                                return (
-                                    <div
-                                        className="new-task-card"
-                                        onClick={(e) => handleEditTask(task, e)}
-                                        key={task.id}
-                                        id="move"
-                                    >
-                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
-                                        <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                        <h3 className="estimated">Estimated {task.estimation}h {getTaskEstimationAcc(task)}</h3>
-                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
-                                            <InfoIcon className="tooltip-icon-task" />
-                                        </Tooltip>
-                                    </div>
-                                );
-                            })}
-                    </div> : <CircularIndeterminate />}
-                    {!loading ? <div className="active-container task">
-                        <h1>Active Tasks</h1>
-                        {userData?.projects
-                            ?.find((projectData: UserProject) => projectData.id === project)
-                            ?.tasks.filter((task: UserTask) => task.status === "active")
-                            .map((task: UserTask) => {
-                                return (
-                                    <div
-                                        className="new-task-card"
-                                        onClick={(e) => handleEditTask(task, e)}
-                                        key={task.id}
-                                    >
-                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
-                                        <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                        <h3 className="estimated">Estimated {task.estimation}h {getTaskEstimationAcc(task)}</h3>
-                                        <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
-                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
-                                            <InfoIcon className="tooltip-icon-task" />
-                                        </Tooltip>
-                                    </div>
-                                );
-                            })}
-                    </div> : <CircularIndeterminate />}
-                    {!loading ? <div className="resolved-container task">
-                        <h1>Resolved Tasks</h1>
-                        {userData?.projects
-                            ?.find((projectData: UserProject) => projectData.id === project)
-                            ?.tasks.filter((task: UserTask) => task.status === "resolved")
-                            .map((task: UserTask) => {
-                                return (
-                                    <div
-                                        className="new-task-card"
-                                        onClick={(e) => handleEditTask(task, e)}
-                                        key={task.id}
-                                    >
-                                        <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
-                                        <h3 className="completed">Completed in {task.completed}h {getTaskEstimationAcc(task)}</h3>
-                                        <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
-                                        <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
-                                            <InfoIcon className="tooltip-icon-task" />
-                                        </Tooltip>
-                                    </div>
-                                );
-                            })}
-                    </div> : <CircularIndeterminate />}
+                    {!loading ? (
+                        <div className="new-container task">
+                            <h1>New Tasks</h1>
+                            {userData?.projects
+                                ?.find((projectData: UserProject) => projectData.id === project)
+                                ?.tasks.filter((task: UserTask) => task.status === "new")
+                                .map((task: UserTask) => {
+                                    return (
+                                        <div
+                                            className="new-task-card"
+                                            onClick={(e) => handleEditTask(task, e)}
+                                            key={task.id}
+                                            id="move"
+                                        >
+                                            <h3>
+                                                #{task.number} {taskHeadingCrop(task.heading)}
+                                            </h3>
+                                            <RedoIcon
+                                                className="icon task-icon-foward"
+                                                onClick={(e) => handleStatusChangeUp(e, task)}
+                                            />
+                                            <h3 className="estimated">
+                                                Estimated {task.estimation}h{" "}
+                                                {getTaskEstimationAcc(task)}
+                                            </h3>
+                                            <Tooltip
+                                                title={
+                                                    <p className="tooltip-text">{task.description}</p>
+                                                }
+                                                TransitionComponent={Zoom}
+                                            >
+                                                <InfoIcon className="tooltip-icon-task" />
+                                            </Tooltip>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    ) : (
+                        <CircularIndeterminate />
+                    )}
+                    {!loading ? (
+                        <div className="active-container task">
+                            <h1>Active Tasks</h1>
+                            {userData?.projects
+                                ?.find((projectData: UserProject) => projectData.id === project)
+                                ?.tasks.filter((task: UserTask) => task.status === "active")
+                                .map((task: UserTask) => {
+                                    return (
+                                        <div
+                                            className="new-task-card"
+                                            onClick={(e) => handleEditTask(task, e)}
+                                            key={task.id}
+                                        >
+                                            <h3>
+                                                #{task.number} {taskHeadingCrop(task.heading)}
+                                            </h3>
+                                            <RedoIcon
+                                                className="icon task-icon-foward"
+                                                onClick={(e) => handleStatusChangeUp(e, task)}
+                                            />
+                                            <h3 className="estimated">
+                                                Estimated {task.estimation}h{" "}
+                                                {getTaskEstimationAcc(task)}
+                                            </h3>
+                                            <RedoIcon
+                                                className="icon task-icon-backward"
+                                                onClick={(e) => handleStatusChangeDown(e, task)}
+                                            />
+                                            <Tooltip
+                                                title={
+                                                    <p className="tooltip-text">{task.description}</p>
+                                                }
+                                                TransitionComponent={Zoom}
+                                            >
+                                                <InfoIcon className="tooltip-icon-task" />
+                                            </Tooltip>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    ) : (
+                        <CircularIndeterminate />
+                    )}
+                    {!loading ? (
+                        <div className="resolved-container task">
+                            <h1>Resolved Tasks</h1>
+                            {userData?.projects
+                                ?.find((projectData: UserProject) => projectData.id === project)
+                                ?.tasks.filter((task: UserTask) => task.status === "resolved")
+                                .map((task: UserTask) => {
+                                    return (
+                                        <div
+                                            className="new-task-card"
+                                            onClick={(e) => handleEditTask(task, e)}
+                                            key={task.id}
+                                        >
+                                            <h3>
+                                                #{task.number} {taskHeadingCrop(task.heading)}
+                                            </h3>
+                                            <h3 className="completed">
+                                                Completed in {task.completed}h{" "}
+                                                {getTaskEstimationAcc(task)}
+                                            </h3>
+                                            <RedoIcon
+                                                className="icon task-icon-backward"
+                                                onClick={(e) => handleStatusChangeDown(e, task)}
+                                            />
+                                            <Tooltip
+                                                title={
+                                                    <p className="tooltip-text">{task.description}</p>
+                                                }
+                                                TransitionComponent={Zoom}
+                                            >
+                                                <InfoIcon className="tooltip-icon-task" />
+                                            </Tooltip>
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    ) : (
+                        <CircularIndeterminate />
+                    )}
                 </div>
             </div>
             <div className="dashboard-right-wrapper">

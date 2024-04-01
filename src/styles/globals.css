@@ -305,10 +305,12 @@
 }
 
 .estimated {
+  font-size: 16px;
   color: #F54627;
 }
 
 .completed {
+  font-size: 16px;
   color: green;
 }
 
@@ -571,7 +573,7 @@
 }
 
 .summary-container {
-  width: 100%;
+  width: 94%;
   border: 2px solid #7e755a;
   background-color: white;
   filter: drop-shadow(2px 1px 2px #AFA37B);
@@ -597,12 +599,30 @@
   color: #F54627;
 }
 
+.acc-zero {
+  font-weight: 600;
+  color: #555;
+}
+
+
+/*///////////////////////////////////////////////////////////////////////////////////////////////*/
+
 @media only screen and (max-width:1300px) {
   .task>h1 {
     text-align: left;
     font-size: 20px;
     padding: 10px;
   }
+
+  .new-task-card>h3 {
+    font-size: 16px;
+    text-wrap: wrap !important;
+  }
+
+  .icon {
+    scale: 1.5;
+  }
+
 }
 
 @media only screen and (max-width: 1120px) {
@@ -645,9 +665,14 @@
     width: 100%;
     height: fit-content;
   }
-}
 
-@media only screen and (max-width: 950px) {
+  .summary-container {
+    position: absolute;
+    width: 250px;
+    right: 5px;
+    top: 100px;
+  }
+
   .menu-icon {
     display: flex;
   }
@@ -655,8 +680,8 @@
   .dashboard-left-wrapper {
     display: none;
   }
-
 }
+
 
 @media only screen and (max-width: 650px) {
 
