@@ -379,6 +379,13 @@ export default function Dashboard() {
         setProjectSummary({ totalTasks, totalEstimation, tasksCompleted, estimationAcc });
     }
 
+    function getTaskEstimationAcc(task: UserTask) {
+        const estimationAcc = task.estimation - task.completed
+        if (task.completed) {
+            return estimationAcc > 0 ? `(+${estimationAcc})` : `(${estimationAcc})`
+        } return ''
+    }
+
     function taskHeadingCrop(heading: string) {
         return heading.length > 30 ? heading.slice(0, 30).concat('...') : heading
     }
@@ -952,7 +959,7 @@ export default function Dashboard() {
                                     >
                                         <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
                                         <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                        <h3 className="estimated">Estimated {task.estimation}h</h3>
+                                        <h3 className="estimated">Estimated {task.estimation}h {getTaskEstimationAcc(task)}</h3>
                                         <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
                                             <InfoIcon className="tooltip-icon-task" />
                                         </Tooltip>
@@ -974,7 +981,7 @@ export default function Dashboard() {
                                     >
                                         <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
                                         <RedoIcon className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                        <h3 className="estimated">Estimated {task.estimation}h</h3>
+                                        <h3 className="estimated">Estimated {task.estimation}h {getTaskEstimationAcc(task)}</h3>
                                         <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
                                         <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
                                             <InfoIcon className="tooltip-icon-task" />
@@ -996,7 +1003,7 @@ export default function Dashboard() {
                                         key={task.id}
                                     >
                                         <h3>#{task.number} {taskHeadingCrop(task.heading)}</h3>
-                                        <h3 className="completed">Completed in {task.completed}h</h3>
+                                        <h3 className="completed">Completed in {task.completed}h {getTaskEstimationAcc(task)}</h3>
                                         <RedoIcon className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
                                         <Tooltip title={<p className="tooltip-text">{task.description}</p>} TransitionComponent={Zoom}>
                                             <InfoIcon className="tooltip-icon-task" />

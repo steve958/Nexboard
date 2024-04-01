@@ -186,7 +186,8 @@
 }
 
 .task:last-child {
-  height: 75% !important;
+  height: 74% !important;
+  padding-bottom: 10px;
 }
 
 .new-container {
