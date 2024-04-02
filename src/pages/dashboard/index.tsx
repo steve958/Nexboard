@@ -27,6 +27,7 @@ import { v4 as uuidv4 } from "uuid";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
 import CircularIndeterminate from "@/components/Loader/Loader";
+import Stopwatch from "@/components/Stopwatch/Stopwatch";
 
 interface NewTask {
     heading: string;
@@ -1026,6 +1027,7 @@ export default function Dashboard() {
                         <InfoIcon className="tooltip-icon" />
                     </Tooltip>
                 </div>
+                <Stopwatch />
                 <div className="central-board">
                     <Image
                         src={dashboardImg}
