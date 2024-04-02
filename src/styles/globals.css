@@ -297,7 +297,6 @@
 .new-task-card>h3:first-child {
   white-space: nowrap;
   text-align: center;
-  padding-left: 30px;
 }
 
 .new-task-card:hover {
