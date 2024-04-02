@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
+import { Tooltip, Zoom } from '@mui/material';
 
 export default function Stopwatch() {
 
@@ -36,10 +37,12 @@ export default function Stopwatch() {
 
     return (
         <div className="stopwatch-container">
-            <p className="stopwatch-time">
-                {hours}:{minutes.toString().padStart(2, "0")}:
-                {seconds.toString().padStart(2, "0")}
-            </p>
+            <Tooltip title={<p className='tooltip-text'>Keep track of task duration</p>} TransitionComponent={Zoom}>
+                <p className="stopwatch-time">
+                    {hours}:{minutes.toString().padStart(2, "0")}:
+                    {seconds.toString().padStart(2, "0")}
+                </p>
+            </Tooltip>
             <div className="stopwatch-buttons">
                 <PlayArrowIcon className='icon' onClick={start} />
                 <PauseIcon className='icon' onClick={stop} />

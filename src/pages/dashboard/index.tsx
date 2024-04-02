@@ -1019,6 +1019,7 @@ export default function Dashboard() {
                                 )}
                             </Select>
                         </FormControl>
+                        <Stopwatch />
                     </Box>
                     <Tooltip
                         title={<p className="tooltip-text">{getUsersProjectStory()}</p>}
@@ -1027,7 +1028,6 @@ export default function Dashboard() {
                         <InfoIcon className="tooltip-icon" />
                     </Tooltip>
                 </div>
-                <Stopwatch />
                 <div className="central-board">
                     <Image
                         src={dashboardImg}
