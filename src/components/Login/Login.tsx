@@ -112,8 +112,8 @@ export default function Login(props: LoginProps) {
         }
     }
 
-    return (
-        <Box className="login-form" as="form">
+return (
+        <Box className="login-form" as="form" onSubmit={handleLogin}>
             <p className="login-heading">Login User</p>
 
             <FormControl isRequired mb={2}>
@@ -173,7 +173,7 @@ export default function Login(props: LoginProps) {
                 </Button>
             </Box>
 
-            <Button colorScheme="brand" className="login-button" onClick={handleLogin} isDisabled={isSubmitting}>
+            <Button colorScheme="brand" className="login-button" type="submit" isDisabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
         </Box>

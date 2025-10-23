@@ -65,6 +65,12 @@ const components = {
       },
     },
   },
+  FormLabel: {
+    baseStyle: {
+      color: '#000',
+      _dark: { color: '#E5E7EB' },
+    },
+  },
 };
 
 const styles = {
@@ -73,8 +79,11 @@ const styles = {
       bg: 'bg',
       color: 'text',
     },
-    'p, span, label': {
+    'p, span': {
       color: 'text',
+    },
+    'label': {
+      color: '#000',
     },
     '*:focus-visible': {
       boxShadow: '0 0 0 3px var(--chakra-colors-ring) !important',

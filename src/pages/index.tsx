@@ -65,14 +65,14 @@ export default function Home() {
             <Image src={landingImg} width={650} height={500} alt="" priority />
             {!showForgotPassword && (
               !login ? (
-                <span className="icon-wrapper">
-<Box as={MdLogin} className="icon" onClick={handleLoginClick} />
+                <span className="icon-wrapper" onClick={handleLoginClick}>
+<Box as={MdLogin} className="icon" />
                   <p>Login</p>
                 </span>
               ) : (
-                <span className="icon-wrapper">
-<Box as={MdPersonAddAlt} className="icon" onClick={handleLoginClick} />
-                  <p>Registracija</p>
+                <span className="icon-wrapper" onClick={handleLoginClick}>
+<Box as={MdPersonAddAlt} className="icon" />
+                  <p>Register</p>
                 </span>
               )
             )}

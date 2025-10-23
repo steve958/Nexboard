@@ -97,6 +97,11 @@ export default function Dashboard() {
     const router = useRouter();
     const toast = useToast();
 
+    function handleLogoutDash() {
+        logout();
+        router.push("/");
+    }
+
     // DnD sensors
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -634,8 +639,8 @@ const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setMenuClicked((clicked: boolean) => !clicked);
     };
 
-    const handleUserClick = (e: any) => {
-        if (e.target.className !== "delete-project-container" && userClicked)
+    const handleUserClick = (e?: any) => {
+        if (e && e.target.className !== "delete-project-container" && userClicked)
             return;
         setUserClicked((clicked: boolean) => !clicked);
     };
@@ -876,7 +881,7 @@ return (
 ></Image>
                     <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={onDragEnd}>
                     {!loading ? (
-<div className="new-container task" id="column:new">
+<div className="new-container task" id="column:new" style={{paddingLeft:'3%'}}>
                         <SortableContext items={(findSelectedProject()?.tasks||[]).filter((t: UserTask)=>t.status==='new').map((t:any)=>`task:${t.id}`)} strategy={verticalListSortingStrategy}>
                             <h1>New Tasks</h1>
                             {userData?.projects
@@ -885,22 +890,18 @@ return (
                                 .map((task: UserTask) => {
                                     return (
                                         <SortableItem id={`task:${(task as any).id}`}>
-                                        <div
-                                            className="new-task-card"
+<div
+                                            className="new-task-card status-new"
                                             onClick={(e) => handleEditTask(task, e)}
                                             key={task.id}
                                         >
                                             <h3>
                                                 #{task.number} {taskHeadingCrop(task.heading)}
                                             </h3>
-                                            <Box as={MdRedo} className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                            <h3 className="estimated">
+<h3 className="estimated">
                                                 Estimated {task.estimation}h{" "}
                                                 {getTaskEstimationAcc(task)}
                                             </h3>
-                                            <Tooltip label={<p className="tooltip-text">{task.description}</p>} openDelay={200}>
-                                                <Box as={MdInfo} className="tooltip-icon-task" />
-                                            </Tooltip>
                                         </div>
                                         </SortableItem>
                                     );
@@ -925,23 +926,18 @@ return (
                                 .map((task: UserTask) => {
                                     return (
 <SortableItem id={`task:${(task as any).id}`}>
-                                        <div
-                                            className="new-task-card"
+<div
+                                            className="new-task-card status-active"
                                             onClick={(e) => handleEditTask(task, e)}
                                             key={task.id}
                                         >
                                             <h3>
                                                 #{task.number} {taskHeadingCrop(task.heading)}
                                             </h3>
-                                            <Box as={MdRedo} className="icon task-icon-foward" onClick={(e) => handleStatusChangeUp(e, task)} />
-                                            <h3 className="estimated">
+<h3 className="estimated">
                                                 Estimated {task.estimation}h{" "}
                                                 {getTaskEstimationAcc(task)}
                                             </h3>
-                                            <Box as={MdRedo} className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
-                                            <Tooltip label={<p className="tooltip-text">{task.description}</p>} openDelay={200}>
-                                                <Box as={MdInfo} className="tooltip-icon-task" />
-                                            </Tooltip>
                                         </div>
                                         </SortableItem>
                                     );
@@ -966,22 +962,18 @@ return (
                                 .map((task: UserTask) => {
                                     return (
 <SortableItem id={`task:${(task as any).id}`}>
-                                        <div
-                                            className="new-task-card"
+<div
+                                            className="new-task-card status-resolved"
                                             onClick={(e) => handleEditTask(task, e)}
                                             key={task.id}
                                         >
                                             <h3>
                                                 #{task.number} {taskHeadingCrop(task.heading)}
                                             </h3>
-                                            <h3 className="completed">
+<h3 className="completed">
                                                 Completed in {task.completed}h{" "}
                                                 {getTaskEstimationAcc(task)}
                                             </h3>
-                                            <Box as={MdRedo} className="icon task-icon-backward" onClick={(e) => handleStatusChangeDown(e, task)} />
-                                            <Tooltip label={<p className="tooltip-text">{task.description}</p>} openDelay={200}>
-                                                <Box as={MdInfo} className="tooltip-icon-task" />
-                                            </Tooltip>
                                         </div>
                                         </SortableItem>
                                     );
@@ -1000,7 +992,7 @@ return (
 </Box>
             </div>
 <Box className="user-container">
-                <IconButton aria-label="logout" icon={<MdLogout />} onClick={handleUserClick as any} />
+                <IconButton aria-label="logout" icon={<MdLogout />} onClick={handleLogoutDash} />
             </Box>
         </Box>
     );
