@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import { Tooltip, Zoom } from '@mui/material';
+import { MdPause, MdPlayArrow, MdStop } from 'react-icons/md';
+import { Tooltip, Box, HStack } from '@chakra-ui/react';
 
 interface StopwatchProps {
     onTimeUpdate?: (hours: number) => void;
@@ -73,39 +71,23 @@ export default function Stopwatch({ onTimeUpdate }: StopwatchProps = {}) {
 
     return (
         <div className="stopwatch-container">
-            <Tooltip
-                title={
-                    <div className='tooltip-text'>
-                        <p>Keep track of task duration</p>
-                        <p style={{ fontSize: '12px', marginTop: '4px' }}>Space: Start/Pause | Ctrl+R: Reset</p>
-                    </div>
-                }
-                TransitionComponent={Zoom}
-            >
+            <Tooltip label={<div className='tooltip-text'><p>Keep track of task duration</p><p style={{ fontSize: '12px', marginTop: '4px' }}>Space: Start/Pause | Ctrl+R: Reset</p></div>} openDelay={200}>
                 <p className="stopwatch-time">
                     {hours.toString().padStart(2, "0")}:{minutes.toString().padStart(2, "0")}:
                     {seconds.toString().padStart(2, "0")}
                 </p>
             </Tooltip>
-            <div className="stopwatch-buttons">
-                <Tooltip title="Start (Space)" arrow>
-                    <PlayArrowIcon
-                        className='icon'
-                        onClick={start}
-                        style={{ color: isRunning ? '#ccc' : '#7e755a' }}
-                    />
+            <HStack className="stopwatch-buttons">
+                <Tooltip label="Start (Space)" openDelay={150}>
+                    <Box as={MdPlayArrow} className='icon' onClick={start} color={isRunning ? '#ccc' : '#7e755a'} />
                 </Tooltip>
-                <Tooltip title="Pause (Space)" arrow>
-                    <PauseIcon
-                        className='icon'
-                        onClick={stop}
-                        style={{ color: !isRunning ? '#ccc' : '#7e755a' }}
-                    />
+                <Tooltip label="Pause (Space)" openDelay={150}>
+                    <Box as={MdPause} className='icon' onClick={stop} color={!isRunning ? '#ccc' : '#7e755a'} />
                 </Tooltip>
-                <Tooltip title="Reset (Ctrl+R)" arrow>
-                    <StopIcon className='icon' onClick={reset} />
+                <Tooltip label="Reset (Ctrl+R)" openDelay={150}>
+                    <Box as={MdStop} className='icon' onClick={reset} />
                 </Tooltip>
-            </div>
+            </HStack>
         </div>
     );
 };

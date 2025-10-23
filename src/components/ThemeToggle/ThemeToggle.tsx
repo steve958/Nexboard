@@ -1,30 +1,18 @@
-import React, { useEffect } from 'react';
-import { IconButton, Tooltip } from '@mui/material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useThemeMode } from '@/context/ThemeContext';
+import React from 'react';
+import { IconButton, Tooltip, useColorMode } from '@chakra-ui/react';
+import { MdBrightness4, MdBrightness7 } from 'react-icons/md';
 
 export default function ThemeToggle() {
-  const { mode, toggleTheme } = useThemeMode();
-
-  useEffect(() => {
-    // Update data-theme attribute on document
-    document.documentElement.setAttribute('data-theme', mode);
-  }, [mode]);
-
+  const { colorMode, toggleColorMode } = useColorMode();
   return (
-    <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`} arrow>
+    <Tooltip label={`Switch to ${colorMode === 'light' ? 'dark' : 'light'} mode`} openDelay={150}>
       <IconButton
-        onClick={toggleTheme}
-        sx={{
-          color: mode === 'light' ? '#7e755a' : '#e0e0e0',
-          '&:hover': {
-            backgroundColor: mode === 'light' ? 'rgba(175, 163, 123, 0.1)' : 'rgba(255, 255, 255, 0.1)',
-          },
-        }}
-      >
-        {mode === 'light' ? <Brightness4Icon /> : <Brightness7Icon />}
-      </IconButton>
+        aria-label="toggle theme"
+        onClick={toggleColorMode}
+        color={colorMode === 'light' ? '#0F172A' : '#E5E7EB'}
+        variant="ghost"
+        icon={colorMode === 'light' ? <MdBrightness4 /> : <MdBrightness7 />}
+      />
     </Tooltip>
   );
 }

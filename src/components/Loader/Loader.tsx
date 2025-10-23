@@ -1,11 +1,10 @@
 import * as React from 'react';
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
+import { Box, Spinner } from '@chakra-ui/react';
 
 export default function CircularIndeterminate() {
-    return (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CircularProgress sx={{ color: 'gray', position: 'absolute' }} size='5rem' />
-        </Box>
-    );
+  return (
+    <Box display="flex" alignItems="center" justifyContent="center" position="relative">
+      <Spinner color="gray.400" size="xl" thickness="4px" speed="0.65s" />
+    </Box>
+  );
 }

@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Typography, Button } from '@mui/material';
-import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import { Box, Text, Button } from '@chakra-ui/react';
+import { MdFolderOpen, MdAssignment } from 'react-icons/md';
 
 interface EmptyStateProps {
     type: 'projects' | 'tasks';
@@ -25,51 +24,22 @@ export default function EmptyState({ type, onAction, actionLabel }: EmptyStatePr
             }}
         >
             {isProjects ? (
-                <FolderOpenIcon sx={{ fontSize: 80, color: '#AFA37B', opacity: 0.5, marginBottom: 2 }} />
+                <Box as={MdFolderOpen} style={{ fontSize: 80, color: '#AFA37B', opacity: 0.5, marginBottom: 8 }} />
             ) : (
-                <AssignmentIcon sx={{ fontSize: 80, color: '#AFA37B', opacity: 0.5, marginBottom: 2 }} />
+                <Box as={MdAssignment} style={{ fontSize: 80, color: '#AFA37B', opacity: 0.5, marginBottom: 8 }} />
             )}
 
-            <Typography
-                variant="h5"
-                sx={{
-                    marginBottom: 1,
-                    fontWeight: 500,
-                    color: '#7e755a',
-                }}
-            >
+            <Text fontSize="xl" fontWeight={500} color="#7e755a" mb={1}>
                 {isProjects ? 'No Projects Yet' : 'No Tasks Yet'}
-            </Typography>
+            </Text>
 
-            <Typography
-                variant="body1"
-                sx={{
-                    marginBottom: 3,
-                    color: '#AFA37B',
-                    maxWidth: '400px',
-                }}
-            >
+            <Text mb={3} color="#AFA37B" maxW="400px">
                 {isProjects
                     ? 'Start by creating your first project to organize your tasks and track your progress.'
                     : 'Add a new task to get started. Break down your work into manageable pieces.'}
-            </Typography>
+            </Text>
 
-            <Button
-                variant="contained"
-                onClick={onAction}
-                className="dashboard-button"
-                sx={{
-                    backgroundColor: '#ffefba',
-                    color: '#7e755a',
-                    '&:hover': {
-                        backgroundColor: '#AFA37B',
-                        color: 'white',
-                    },
-                    textTransform: 'none',
-                    fontSize: '16px',
-                    padding: '12px 32px',
-                }}
-            >
+            <Button colorScheme="brand" onClick={onAction} className="dashboard-button">
                 {actionLabel}
             </Button>
         </Box>

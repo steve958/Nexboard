@@ -1,13 +1,8 @@
 import React, { SetStateAction, useState } from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import { Button, InputAdornment, CircularProgress, IconButton, Checkbox, FormControlLabel } from "@mui/material";
-import HttpsIcon from '@mui/icons-material/Https';
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Box, Button, Checkbox, FormControl, FormLabel, Input, InputGroup, InputLeftElement, InputRightElement, IconButton, Text, Tooltip } from "@chakra-ui/react";
+import { MdHttps, MdAlternateEmail, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { useToast } from "@chakra-ui/react";
 import { UserAuth } from "@/context/AuthContext";
 import { validateEmail, getEmailError, validatePassword } from "@/utils/validation";
 import { getFriendlyAuthError } from "@/utils/authErrors";
@@ -33,6 +28,7 @@ export default function Login(props: LoginProps) {
     const { login } = UserAuth()
 
     const router = useRouter()
+    const toast = useToast()
 
     const handleTogglePasswordVisibility = () => {
         setShowPassword(!showPassword)
@@ -76,7 +72,7 @@ export default function Login(props: LoginProps) {
         setTouched({ email: true, password: true })
 
         if (emailValidationError || !passwordValidation.isValid) {
-            toast.error('Please fix validation errors', { position: 'top-center' })
+            toast({ status: 'error', title: 'Please fix validation errors' })
             return
         }
 
@@ -92,7 +88,7 @@ export default function Login(props: LoginProps) {
                 localStorage.removeItem('rememberMe')
             }
 
-            toast.success('Login successful', { position: 'top-center' })
+            toast({ status: 'success', title: 'Login successful' })
             router.push('/dashboard')
             setEmail('')
             setPassword('')
@@ -102,7 +98,7 @@ export default function Login(props: LoginProps) {
             setIsSubmitting(false)
         } catch (e: any) {
             const friendlyError = getFriendlyAuthError(e)
-            toast.error(friendlyError, { position: 'top-center' })
+            toast({ status: 'error', title: friendlyError })
 
             // Set field-specific errors if applicable
             if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-email') {
@@ -117,124 +113,67 @@ export default function Login(props: LoginProps) {
     }
 
     return (
-        <Box
-            className="login-form"
-            component="form"
-            sx={{
-                "& > :not(style)": {
-                    m: 1, width: "100%", display: "flex"
-                },
-            }
-            }
-            noValidate
-            autoComplete="off"
-        >
+        <Box className="login-form" as="form">
             <p className="login-heading">Login User</p>
-            <TextField
-                id="outlined-basic4"
-                variant="outlined"
-                label="Email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={handleEmailBlur}
-                placeholder="email@example.com"
-                error={!!emailError && touched.email}
-                helperText={touched.email ? emailError : ''}
-                required
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <AlternateEmailIcon />
-                        </InputAdornment>
-                    ),
-                }}
-            />
-            <TextField
-                id="outlined-basic3"
-                variant="outlined"
-                label="Password"
-                value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                onBlur={handlePasswordBlur}
-                type={showPassword ? "text" : "password"}
-                placeholder="password"
-                error={!!passwordError && touched.password}
-                helperText={touched.password ? passwordError : ''}
-                required
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <HttpsIcon />
-                        </InputAdornment>
-                    ),
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton
-                                aria-label="toggle password visibility"
-                                onClick={handleTogglePasswordVisibility}
-                                edge="end"
-                                size="small"
-                            >
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                }}
-            />
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                width: '100%',
-                marginTop: '-8px',
-                marginBottom: '8px'
-            }}>
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={rememberMe}
-                            onChange={(e) => setRememberMe(e.target.checked)}
-                            sx={{
-                                color: '#7e755a',
-                                '&.Mui-checked': {
-                                    color: '#7e755a',
-                                },
-                            }}
+
+            <FormControl isRequired mb={2}>
+                <FormLabel>Email</FormLabel>
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <Box as={MdAlternateEmail} />
+                    </InputLeftElement>
+                    <Input
+                        value={email}
+                        onChange={(e) => handleEmailChange(e.target.value)}
+                        onBlur={handleEmailBlur}
+                        placeholder="email@example.com"
+                        isInvalid={!!emailError && touched.email}
+                    />
+                </InputGroup>
+                {touched.email && (
+                    <Text fontSize="xs" color="red.500" mt={1}>{emailError}</Text>
+                )}
+            </FormControl>
+
+            <FormControl isRequired mb={2}>
+                <FormLabel>Password</FormLabel>
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <Box as={MdHttps} />
+                    </InputLeftElement>
+                    <Input
+                        value={password}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        onBlur={handlePasswordBlur}
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="password"
+                        isInvalid={!!passwordError && touched.password}
+                    />
+                    <InputRightElement>
+                        <IconButton
+                            aria-label="toggle password visibility"
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleTogglePasswordVisibility}
+                            icon={showPassword ? <MdVisibilityOff /> : <MdVisibility />}
                         />
-                    }
-                    label="Remember me"
-                    sx={{
-                        color: '#7e755a',
-                        '& .MuiFormControlLabel-label': {
-                            fontSize: '14px'
-                        }
-                    }}
-                />
-                <Button
-                    variant="text"
-                    onClick={onForgotPassword}
-                    disabled={isSubmitting}
-                    sx={{
-                        color: '#7e755a',
-                        textTransform: 'none',
-                        fontSize: '14px',
-                        padding: '4px 8px',
-                        '&:hover': {
-                            backgroundColor: 'rgba(175, 163, 123, 0.1)',
-                            textDecoration: 'underline'
-                        }
-                    }}
-                >
+                    </InputRightElement>
+                </InputGroup>
+                {touched.password && (
+                    <Text fontSize="xs" color="red.500" mt={1}>{passwordError}</Text>
+                )}
+            </FormControl>
+
+            <Box display="flex" justifyContent="space-between" alignItems="center" w="100%" mt={-2} mb={2}>
+                <Checkbox isChecked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} colorScheme="brand">
+                    <Text fontSize="sm" color="#7e755a">Remember me</Text>
+                </Checkbox>
+                <Button variant="link" onClick={onForgotPassword} isDisabled={isSubmitting} color="#7e755a" fontSize="sm">
                     Forgot Password?
                 </Button>
             </Box>
-            <Button
-                variant="contained"
-                className="login-button"
-                onClick={handleLogin}
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? <CircularProgress size={20} sx={{ color: '#7e755a' }} /> : null}
-            >
+
+            <Button colorScheme="brand" className="login-button" onClick={handleLogin} isDisabled={isSubmitting}>
                 {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
         </Box>

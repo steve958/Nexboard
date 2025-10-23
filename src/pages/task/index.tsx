@@ -3,23 +3,12 @@ import React, { useEffect, useLayoutEffect, useState, useRef } from "react";
 import Image from "next/image";
 import dashboardImg from "../../../public/dashboardImg.png";
 import router from "next/router";
-import LogoutIcon from "@mui/icons-material/Logout";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import {
-    Box,
-    Button,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    Stack,
-    TextField,
-} from "@mui/material";
+import { MdLogout, MdArrowBack, MdClose } from "react-icons/md";
+import { Box, Button, FormControl, FormLabel, Select, Stack, Input, Textarea, Modal, ModalOverlay, ModalContent, ModalHeader, ModalCloseButton, ModalFooter, ModalBody, HStack } from "@chakra-ui/react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
-import { toast } from "react-toastify";
+import { useToast } from "@chakra-ui/react";
 import { UserProject, UserTask } from "../dashboard";
-import CloseIcon from "@mui/icons-material/Close";
 import CircularIndeterminate from "@/components/Loader/Loader";
 
 export default function Task() {
@@ -30,6 +19,7 @@ export default function Task() {
     const [loading, setLoading] = useState(false)
 
     const { currentTask, logout, user, project } = UserAuth();
+    const toast = useToast();
 
     const ref = useRef<null | any>(null);
 
@@ -74,11 +64,11 @@ export default function Task() {
                 projects: [selected, ...filtered],
             });
             setLoading(false)
-            toast.success("Task is deleted!", { position: "top-center" });
+            toast({ status: 'success', title: 'Task is deleted!' });
             setTaskDetails({} as UserTask)
             router.push("/dashboard");
         } catch (error) {
-            toast.error("Error occurred", { position: "top-center" });
+            toast({ status: 'error', title: 'Error occurred' });
             console.log(error);
         }
     }
@@ -91,7 +81,7 @@ export default function Task() {
             !taskDetails.estimation ||
             !taskDetails.status
         ) {
-            toast.error("Please fill all task details", { position: "top-center" });
+            toast({ status: 'error', title: 'Please fill all task details' });
             return;
         }
         try {
@@ -110,11 +100,11 @@ export default function Task() {
                 projects: [selected, ...filtered],
             });
             setLoading(false)
-            toast.success("Task is saved!", { position: "top-center" });
+            toast({ status: 'success', title: 'Task is saved!' });
             setTaskDetails({} as UserTask)
             router.push("/dashboard");
         } catch (error) {
-            toast.error("Error occurred", { position: "top-center" });
+            toast({ status: 'error', title: 'Error occurred' });
             console.log(error);
         }
 
@@ -189,85 +179,37 @@ export default function Task() {
 
     return (
         <div className="task-container" ref={ref}>
-            {userClicked && (
-                <div
-                    className="delete-project-container"
-                    onClick={(e) => handleUserClick(e)}
-                >
-                    <div className="delete-project-wrapper">
-                        <h3>{`Are you sure you want to logout?`}</h3>
-                        <Box
-                            component="form"
-                            sx={{
-                                "& > :not(style)": {
-                                    width: "100%",
-                                    display: "flex",
-                                },
-                            }}
-                            noValidate
-                            autoComplete="off"
-                        >
-                            <Stack spacing={2} direction="row">
-                                <Button
-                                    variant="contained"
-                                    className="delete-confirm-button"
-                                    onClick={handleLogout}
-                                >
-                                    logout
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    className="delete-back-button"
-                                    onClick={handleUserCloseClick}
-                                >
-                                    return
-                                </Button>
+{userClicked && (
+                <Modal isOpen={userClicked} onClose={handleUserCloseClick} isCentered>
+                    <ModalOverlay />
+                    <ModalContent>
+                        <ModalHeader>Are you sure you want to logout?</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalFooter>
+                            <Stack direction="row">
+                                <Button colorScheme="brand" onClick={handleLogout}>logout</Button>
+                                <Button variant="ghost" onClick={handleUserCloseClick}>return</Button>
                             </Stack>
-                        </Box>
-                    </div>
-                    <CloseIcon className="close-icon" onClick={handleUserCloseClick} />
-                </div>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
             )}
-            {deleteModalClicked && (
-                <div
-                    className="delete-project-container"
-                    onClick={handleDeleteModalClick}
-                >
-                    <div className="delete-project-wrapper">
-                        <h3>{`Are you sure you want to permanently delete this task?`}</h3>
-                        <Box
-                            component="form"
-                            sx={{
-                                "& > :not(style)": {
-                                    width: "100%",
-                                    display: "flex",
-                                },
-                            }}
-                            noValidate
-                            autoComplete="off"
-                        >
+{deleteModalClicked && (
+                <Modal isOpen={deleteModalClicked} onClose={handleCloseDeleteModal} isCentered>
+                    <ModalOverlay />
+                    <ModalContent>
+                        <ModalHeader>{`Are you sure you want to permanently delete this task?`}</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalFooter>
                             <Stack spacing={2} direction="row">
-                                <Button
-                                    variant="contained"
-                                    className="delete-confirm-button"
-                                    onClick={deleteTask}
-                                >
-                                    delete task
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    className="delete-back-button"
-                                    onClick={handleCloseDeleteModal}
-                                >
-                                    return
-                                </Button>
+                                <Button colorScheme="red" onClick={deleteTask}>delete task</Button>
+                                <Button variant="ghost" onClick={handleCloseDeleteModal}>return</Button>
                             </Stack>
-                        </Box>
-                    </div>
-                    <CloseIcon className="delete-task-icon icon" onClick={handleCloseDeleteModal} />
-                </div>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
             )}
-            <ArrowBackIcon className="icon back-icon" onClick={handleBackButton} />
+<Box as={MdArrowBack} className="icon back-icon" onClick={handleBackButton} />
             <Image
                 src={dashboardImg}
                 width={containerWidth ? containerWidth * 0.75 : 1500}
@@ -280,114 +222,48 @@ export default function Task() {
                 style={{ width: `${containerWidth ? containerWidth * 0.75 : 1500}` }}
             >
                 {!loading ?
-                    <Box
-                        component="form"
-                        sx={{
-                            "& > :not(style)": {
-                                width: "100%",
-                                display: "flex",
-                            },
-                        }}
-                        noValidate
-                        autoComplete="off"
-                    >
+<Box as="form">
                         <span className="created-wrapper">
                             <p>Task created</p>
                             <p>{(currentTask as UserTask).created?.toString()}</p>
                         </span>
-                        <TextField
-                            defaultValue={(currentTask as UserTask).heading}
-                            id="outlined-basic7"
-                            required
-                            onChange={(e) => handleTaskDetailsChange(e.target.value, "heading")}
-                            variant="outlined"
-                            label="Task heading"
-                            placeholder="e.g. web shop app"
-                            sx={{
-                                "& > :not(style)": {
-                                    marginBottom: "10px",
-                                },
-                            }}
-                        />
-                        <TextField
-                            id="standard-multiline-flexible"
-                            variant="outlined"
-                            required
-                            onChange={(e) =>
-                                handleTaskDetailsChange(e.target.value, "description")
-                            }
-                            multiline
-                            label="Description"
-                            defaultValue={(currentTask as UserTask).description}
-                            rows={10}
-                            placeholder="e.g. navbar should have five different icons connected to page routing"
-                            sx={{
-                                "& > :not(style)": {
-                                    marginBottom: "10px",
-                                },
-                            }}
-                        />
-                        <span className="estimated-wrapper">
+<FormControl isRequired mb={2}>
+                            <FormLabel>Task heading</FormLabel>
+                            <Input defaultValue={(currentTask as UserTask).heading} onChange={(e) => handleTaskDetailsChange(e.target.value, "heading")} placeholder="e.g. web shop app" />
+                        </FormControl>
+<FormControl isRequired mb={2}>
+                            <FormLabel>Description</FormLabel>
+                            <Textarea defaultValue={(currentTask as UserTask).description} rows={10} placeholder="e.g. navbar should have five different icons connected to page routing" onChange={(e) => handleTaskDetailsChange(e.target.value, "description")} />
+                        </FormControl>
+<HStack className="estimated-wrapper">
                             <p>Estimation:</p>
-                            <input
-                                type="number"
-                                onChange={(e) =>
-                                    handleTaskDetailsChange(e.target.value, "estimation")
-                                }
-                                defaultValue={(currentTask as UserTask).estimation}
-                                className="estimation-input"
-                                min={1}
-                            />
+                            <Input type="number" onChange={(e) => handleTaskDetailsChange(e.target.value, "estimation")} defaultValue={(currentTask as UserTask).estimation as any} min={1} width="120px" />
                             <p>hours</p>
-                        </span>
-                        <span className="estimated-wrapper">
+                        </HStack>
+<HStack className="estimated-wrapper">
                             <p>Completed:</p>
-                            <input
-                                type="number"
-                                defaultValue={(currentTask as UserTask).completed}
-                                onChange={(e) =>
-                                    handleTaskDetailsChange(e.target.value, "completed")
-                                }
-                                className="estimation-input"
-                                min={0}
-                            />
+                            <Input type="number" defaultValue={(currentTask as UserTask).completed as any} onChange={(e) => handleTaskDetailsChange(e.target.value, "completed")} min={0} width="120px" />
                             <p>hours</p>
-                        </span>
-                        <Box sx={{ width: 250, marginBottom: "20px" }}>
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Task status</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    defaultValue={(currentTask as UserTask).status}
-                                    onChange={(e) =>
-                                        handleTaskDetailsChange(e.target.value, "status")
-                                    }
-                                    label="Select project"
-                                >
-                                    <MenuItem value="new">NEW</MenuItem>
-                                    <MenuItem value="active">ACTIVE</MenuItem>
-                                    <MenuItem value="resolved">RESOLVED</MenuItem>
+                        </HStack>
+<Box w={250} mb="20px">
+                            <FormControl>
+                                <FormLabel>Task status</FormLabel>
+                                <Select defaultValue={(currentTask as UserTask).status} onChange={(e) => handleTaskDetailsChange(e.target.value, "status")}>
+                                    <option value="new">NEW</option>
+                                    <option value="active">ACTIVE</option>
+                                    <option value="resolved">RESOLVED</option>
                                 </Select>
                             </FormControl>
                         </Box>
-                        <Stack spacing={2} direction="row">
-                            <Button
-                                variant="contained"
-                                className="delete-confirm-button"
-                                onClick={saveTask}
-                            >
-                                save task
-                            </Button>
-                            <Button variant="contained" className="delete-back-button" onClick={handleDeleteModalClick}>
-                                delete task
-                            </Button>
+<Stack spacing={2} direction="row">
+                            <Button colorScheme="brand" onClick={saveTask}>save task</Button>
+                            <Button colorScheme="red" variant="solid" onClick={handleDeleteModalClick}>delete task</Button>
                         </Stack>
                     </Box>
                     : <CircularIndeterminate />}
             </div>
             <div className="user-container">
-                <LogoutIcon className="icon" onClick={handleUserClick} />
+<Box as={MdLogout} className="icon" onClick={handleUserClick as any} />
             </div>
         </div>
     );

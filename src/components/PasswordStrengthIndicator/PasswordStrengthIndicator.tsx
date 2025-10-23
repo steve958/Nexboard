@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, LinearProgress, Typography } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CancelIcon from '@mui/icons-material/Cancel';
+import { Box, Progress, Text, HStack } from '@chakra-ui/react';
+import { MdCheckCircle, MdCancel } from 'react-icons/md';
 import { getPasswordStrength, getPasswordRequirements } from '@/utils/validation';
 
 interface PasswordStrengthIndicatorProps {
@@ -42,61 +41,27 @@ export default function PasswordStrengthIndicator({ password, show }: PasswordSt
   };
 
   return (
-    <Box sx={{ width: '100%', mt: 1, mb: 2 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="caption" sx={{ color: '#7e755a' }}>
-          Password Strength:
-        </Typography>
-        <Typography
-          variant="caption"
-          sx={{
-            color: getStrengthColor(),
-            fontWeight: 'bold',
-            textTransform: 'capitalize',
-          }}
-        >
+    <Box w="100%" mt={1} mb={2}>
+      <HStack align="center" justify="space-between" mb={1}>
+        <Text fontSize="xs" color="#7e755a">Password Strength:</Text>
+        <Text fontSize="xs" fontWeight="bold" textTransform="capitalize" color={getStrengthColor()}>
           {password ? strength : 'None'}
-        </Typography>
-      </Box>
-      <LinearProgress
-        variant="determinate"
-        value={getStrengthValue()}
-        sx={{
-          height: 8,
-          borderRadius: 4,
-          backgroundColor: '#e0e0e0',
-          '& .MuiLinearProgress-bar': {
-            backgroundColor: getStrengthColor(),
-            borderRadius: 4,
-          },
-        }}
-      />
+        </Text>
+      </HStack>
+      <Progress value={getStrengthValue()} size="sm" borderRadius={4} sx={{
+        '& > div': { backgroundColor: getStrengthColor() }
+      }} />
 
-      <Box sx={{ mt: 2 }}>
-        <Typography variant="caption" sx={{ color: '#7e755a', fontWeight: 'bold', display: 'block', mb: 1 }}>
+      <Box mt={2}>
+        <Text fontSize="xs" color="#7e755a" fontWeight="bold" display="block" mb={1}>
           Password Requirements:
-        </Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <RequirementItem
-            met={requirements.minLength}
-            text="At least 8 characters"
-          />
-          <RequirementItem
-            met={requirements.hasUpperCase}
-            text="One uppercase letter"
-          />
-          <RequirementItem
-            met={requirements.hasLowerCase}
-            text="One lowercase letter"
-          />
-          <RequirementItem
-            met={requirements.hasNumber}
-            text="One number"
-          />
-          <RequirementItem
-            met={requirements.hasSpecialChar}
-            text="One special character (!@#$%^&*)"
-          />
+        </Text>
+        <Box display="flex" flexDirection="column" gap={0.5}>
+          <RequirementItem met={requirements.minLength} text="At least 8 characters" />
+          <RequirementItem met={requirements.hasUpperCase} text="One uppercase letter" />
+          <RequirementItem met={requirements.hasLowerCase} text="One lowercase letter" />
+          <RequirementItem met={requirements.hasNumber} text="One number" />
+          <RequirementItem met={requirements.hasSpecialChar} text="One special character (!@#$%^&*)" />
         </Box>
       </Box>
     </Box>
@@ -110,21 +75,15 @@ interface RequirementItemProps {
 
 function RequirementItem({ met, text }: RequirementItemProps) {
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <HStack align="center" spacing={1}>
       {met ? (
-        <CheckCircleIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+        <MdCheckCircle style={{ fontSize: 16, color: '#4CAF50' }} />
       ) : (
-        <CancelIcon sx={{ fontSize: 16, color: '#ccc' }} />
+        <MdCancel style={{ fontSize: 16, color: '#ccc' }} />
       )}
-      <Typography
-        variant="caption"
-        sx={{
-          color: met ? '#4CAF50' : '#999',
-          fontSize: '12px',
-        }}
-      >
+      <Text fontSize="xs" color={met ? '#4CAF50' : '#999'}>
         {text}
-      </Typography>
-    </Box>
+      </Text>
+    </HStack>
   );
 }

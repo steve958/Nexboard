@@ -6,8 +6,8 @@ import { useRouter } from "next/router";
 import Login from "../components/Login/Login";
 import Register from "../components/Register/Register";
 import ForgotPassword from "../components/ForgotPassword/ForgotPassword";
-import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
-import InputIcon from "@mui/icons-material/Input";
+import { MdPersonAddAlt, MdLogin } from "react-icons/md";
+import { Box } from "@chakra-ui/react";
 import { UserAuth } from "@/context/AuthContext";
 import CircularIndeterminate from "@/components/Loader/Loader";
 
@@ -66,12 +66,12 @@ export default function Home() {
             {!showForgotPassword && (
               !login ? (
                 <span className="icon-wrapper">
-                  <InputIcon className="icon" onClick={handleLoginClick} />
+<Box as={MdLogin} className="icon" onClick={handleLoginClick} />
                   <p>Login</p>
                 </span>
               ) : (
                 <span className="icon-wrapper">
-                  <PersonAddAltIcon className="icon" onClick={handleLoginClick} />
+<Box as={MdPersonAddAlt} className="icon" onClick={handleLoginClick} />
                   <p>Registracija</p>
                 </span>
               )

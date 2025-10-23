@@ -1,13 +1,8 @@
 import React, { SetStateAction, useState } from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import { Button, InputAdornment, CircularProgress, IconButton } from "@mui/material";
-import HttpsIcon from '@mui/icons-material/Https';
-import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { Box, Button, FormControl, FormLabel, Input, InputGroup, InputLeftElement, InputRightElement, IconButton } from "@chakra-ui/react";
+import { MdHttps, MdAlternateEmail, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { UserAuth } from "@/context/AuthContext";
-import { toast } from "react-toastify";
+import { useToast } from "@chakra-ui/react";
 import { validateEmail, getEmailError, validatePassword, getPasswordStrength } from "@/utils/validation";
 import PasswordStrengthIndicator from "../PasswordStrengthIndicator/PasswordStrengthIndicator";
 import { getFriendlyAuthError } from "@/utils/authErrors";
@@ -32,6 +27,7 @@ export default function Register(props: RegisterProps) {
     const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false)
 
     const { signup } = UserAuth()
+    const toast = useToast()
 
     const handleTogglePasswordVisibility = () => {
         setShowPassword(!showPassword)
@@ -99,11 +95,11 @@ export default function Register(props: RegisterProps) {
         // Check password strength for registration
         const strength = getPasswordStrength(password)
         if (strength === 'weak' && password.length >= 8) {
-            toast.warning('Consider using a stronger password', { position: 'top-center' })
+            toast({ status: 'warning', title: 'Consider using a stronger password' })
         }
 
         if (emailValidationError || !passwordValidation.isValid || confirmError) {
-            toast.error('Please fix validation errors', { position: 'top-center' })
+            toast({ status: 'error', title: 'Please fix validation errors' })
             return
         }
 
@@ -111,7 +107,7 @@ export default function Register(props: RegisterProps) {
             setIsSubmitting(true)
             setLoading(true)
             await signup(email, password)
-            toast.success('Registration successful! Welcome to Nexboard.', { position: 'top-center' })
+            toast({ status: 'success', title: 'Registration successful! Welcome to Nexboard.' })
             setEmail('')
             setPassword('')
             setConfirmPassword('')
@@ -122,7 +118,7 @@ export default function Register(props: RegisterProps) {
             setIsSubmitting(false)
         } catch (e: any) {
             const friendlyError = getFriendlyAuthError(e)
-            toast.error(friendlyError, { position: 'top-center' })
+            toast({ status: 'error', title: friendlyError })
 
             // Set field-specific errors if applicable
             if (e.code === 'auth/email-already-in-use') {
@@ -139,109 +135,68 @@ export default function Register(props: RegisterProps) {
     }
 
     return (
-        <Box
-            className="login-form"
-            component="form"
-            sx={{
-                "& > :not(style)": {
-                    m: 1, width: "100%", display: "flex"
-                },
-            }}
-            noValidate
-            autoComplete="off"
-        >
+        <Box className="login-form" as="form">
             <p className="login-heading">Register User</p>
-            <TextField
-                id="outlined-basic1"
-                variant="outlined"
-                label="Email"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                onBlur={handleEmailBlur}
-                placeholder="email@example.com"
-                error={!!emailError && touched.email}
-                helperText={touched.email ? emailError : ''}
-                required
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <AlternateEmailIcon />
-                        </InputAdornment>
-                    ),
-                }}
-            />
-            <TextField
-                id="outlined-basic2"
-                variant="outlined"
-                label="Password"
-                value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                onBlur={handlePasswordBlur}
-                type={showPassword ? "text" : "password"}
-                placeholder="password"
-                error={!!passwordError && touched.password}
-                helperText={touched.password ? passwordError : ''}
-                required
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <HttpsIcon />
-                        </InputAdornment>
-                    ),
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton
-                                aria-label="toggle password visibility"
-                                onClick={handleTogglePasswordVisibility}
-                                edge="end"
-                                size="small"
-                            >
-                                {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                }}
-            />
+
+            <FormControl isRequired mb={2}>
+                <FormLabel>Email</FormLabel>
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <Box as={MdAlternateEmail} />
+                    </InputLeftElement>
+                    <Input
+                        value={email}
+                        onChange={(e) => handleEmailChange(e.target.value)}
+                        onBlur={handleEmailBlur}
+                        placeholder="email@example.com"
+                        isInvalid={!!emailError && touched.email}
+                    />
+                </InputGroup>
+            </FormControl>
+
+            <FormControl isRequired mb={2}>
+                <FormLabel>Password</FormLabel>
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <Box as={MdHttps} />
+                    </InputLeftElement>
+                    <Input
+                        value={password}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        onBlur={handlePasswordBlur}
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="password"
+                        isInvalid={!!passwordError && touched.password}
+                    />
+                    <InputRightElement>
+                        <IconButton aria-label="toggle password visibility" size="sm" variant="ghost" onClick={handleTogglePasswordVisibility} icon={showPassword ? <MdVisibilityOff /> : <MdVisibility />} />
+                    </InputRightElement>
+                </InputGroup>
+            </FormControl>
+
             <PasswordStrengthIndicator password={password} show={touched.password || password.length > 0} />
-            <TextField
-                id="outlined-basic-confirm"
-                variant="outlined"
-                label="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                onBlur={handleConfirmPasswordBlur}
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="confirm password"
-                error={!!confirmPasswordError && touched.confirmPassword}
-                helperText={touched.confirmPassword ? confirmPasswordError : ''}
-                required
-                InputProps={{
-                    startAdornment: (
-                        <InputAdornment position="start">
-                            <HttpsIcon />
-                        </InputAdornment>
-                    ),
-                    endAdornment: (
-                        <InputAdornment position="end">
-                            <IconButton
-                                aria-label="toggle confirm password visibility"
-                                onClick={handleToggleConfirmPasswordVisibility}
-                                edge="end"
-                                size="small"
-                            >
-                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                        </InputAdornment>
-                    ),
-                }}
-            />
-            <Button
-                variant="contained"
-                className="login-button"
-                onClick={handleRegister}
-                disabled={isSubmitting}
-                startIcon={isSubmitting ? <CircularProgress size={20} sx={{ color: '#7e755a' }} /> : null}
-            >
+
+            <FormControl isRequired mb={2}>
+                <FormLabel>Confirm Password</FormLabel>
+                <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                        <Box as={MdHttps} />
+                    </InputLeftElement>
+                    <Input
+                        value={confirmPassword}
+                        onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                        onBlur={handleConfirmPasswordBlur}
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="confirm password"
+                        isInvalid={!!confirmPasswordError && touched.confirmPassword}
+                    />
+                    <InputRightElement>
+                        <IconButton aria-label="toggle confirm password visibility" size="sm" variant="ghost" onClick={handleToggleConfirmPasswordVisibility} icon={showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />} />
+                    </InputRightElement>
+                </InputGroup>
+            </FormControl>
+
+            <Button colorScheme="brand" className="login-button" onClick={handleRegister} isDisabled={isSubmitting}>
                 {isSubmitting ? 'Creating account...' : 'Register'}
             </Button>
         </Box>

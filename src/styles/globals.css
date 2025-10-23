@@ -297,9 +297,9 @@ body {
   font-size: 32px;
   font-weight: 800;
   font-family: 'Poppins', sans-serif;
-  color: #FFFFFF;
+  color: var(--text-primary);
   text-align: center;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   letter-spacing: -0.5px;
 }
 
