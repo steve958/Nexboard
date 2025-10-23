@@ -1,24 +1,46 @@
 import Head from "next/head";
 import Image from "next/image";
 import landingImg from "../../public/logo_landing.png";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import Login from "../components/Login/Login";
 import Register from "../components/Register/Register";
+import ForgotPassword from "../components/ForgotPassword/ForgotPassword";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import InputIcon from "@mui/icons-material/Input";
 import { UserAuth } from "@/context/AuthContext";
 import CircularIndeterminate from "@/components/Loader/Loader";
+import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 
 export default function Home() {
   const { user } = UserAuth();
+  const router = useRouter();
+
+  // Auto-redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const [login, setLogin] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
+  const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
 
   function handleLoginClick() {
     setTimeout(() => {
       setLogin(!login);
+      setShowForgotPassword(false);
     }, 100);
+  }
+
+  function handleForgotPasswordClick() {
+    setShowForgotPassword(true);
+  }
+
+  function handleBackToLogin() {
+    setShowForgotPassword(false);
+    setLogin(true);
   }
 
   return (
@@ -31,25 +53,32 @@ export default function Home() {
       </Head>
       <main>
         <div className="landing-container">
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
+            <ThemeToggle />
+          </div>
           <div className="landing-left-wrapper">
-            {login ? (
-              <Login setLoading={setLoading} />
+            {showForgotPassword ? (
+              <ForgotPassword setLoading={setLoading} onBack={handleBackToLogin} />
+            ) : login ? (
+              <Login setLoading={setLoading} onForgotPassword={handleForgotPasswordClick} />
             ) : (
               <Register setLoading={setLoading} />
             )}
           </div>
           {!loading && <div className="landing-right-wrapper">
             <Image src={landingImg} width={650} height={500} alt="" priority />
-            {!login ? (
-              <span className="icon-wrapper">
-                <InputIcon className="icon" onClick={handleLoginClick} />
-                <p>Login</p>
-              </span>
-            ) : (
-              <span className="icon-wrapper">
-                <PersonAddAltIcon className="icon" onClick={handleLoginClick} />
-                <p>Registracija</p>
-              </span>
+            {!showForgotPassword && (
+              !login ? (
+                <span className="icon-wrapper">
+                  <InputIcon className="icon" onClick={handleLoginClick} />
+                  <p>Login</p>
+                </span>
+              ) : (
+                <span className="icon-wrapper">
+                  <PersonAddAltIcon className="icon" onClick={handleLoginClick} />
+                  <p>Registracija</p>
+                </span>
+              )
             )}
           </div>}
           {loading && <CircularIndeterminate />}

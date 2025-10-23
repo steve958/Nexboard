@@ -1,5 +1,5 @@
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import {auth} from '../components/firebase' 
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import {auth} from '../components/firebase'
 import { useContext, createContext, useState, useEffect } from "react";
 
 const AuthContext = createContext()
@@ -21,11 +21,17 @@ export const AuthContextProvider = ({children}) => {
         return createUserWithEmailAndPassword(auth, email, password)
     }
 
-     function login(email, password) {
+    async function login(email, password, rememberMe = false) {
+        // Set persistence based on remember me checkbox
+        const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence
+        await setPersistence(auth, persistence)
         return signInWithEmailAndPassword(auth, email, password)
     }
 
     function logout() {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('rememberMe')
+        }
         return signOut(auth)
     }
 

@@ -4,12 +4,39 @@ import "react-toastify/dist/ReactToastify.css";
 import type { AppProps } from "next/app";
 import { ToastContainer } from "react-toastify";
 import { AuthContextProvider } from "@/context/AuthContext";
+import { ThemeProvider, useThemeMode } from "@/context/ThemeContext";
 
-export default function App({ Component, pageProps }: AppProps) {
+function AppContent({ Component, pageProps }: AppProps) {
+  const { mode } = useThemeMode();
+
   return (
-    <AuthContextProvider>
+    <>
       <Component {...pageProps} />
-      <ToastContainer />
-    </AuthContextProvider>
+      <ToastContainer
+        position="top-center"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={mode}
+        style={{
+          top: '20px',
+        }}
+      />
+    </>
+  );
+}
+
+export default function App(props: AppProps) {
+  return (
+    <ThemeProvider>
+      <AuthContextProvider>
+        <AppContent {...props} />
+      </AuthContextProvider>
+    </ThemeProvider>
   );
 }

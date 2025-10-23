@@ -2,6 +2,17 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+### Environment Setup
+
+1. Copy the example environment file:
+```bash
+cp .env.local.example .env.local
+```
+
+2. Fill in your Firebase credentials in `.env.local`. Get these values from [Firebase Console](https://console.firebase.google.com/) -> Project Settings -> General.
+
+### Running the Development Server
+
 First, run the development server:
 
 ```bash

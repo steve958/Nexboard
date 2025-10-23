@@ -28,6 +28,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
 import CircularIndeterminate from "@/components/Loader/Loader";
 import Stopwatch from "@/components/Stopwatch/Stopwatch";
+import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 
 interface NewTask {
     heading: string;
@@ -137,6 +138,28 @@ export default function Dashboard() {
             setNewProjectName(name);
         }
     }, [editProjectClicked]);
+
+    // Handle Escape key to close modals
+    useEffect(() => {
+        const handleEscapeKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                if (newProjectClicked) {
+                    handleCloseProjectClick(e);
+                } else if (editProjectClicked) {
+                    handleCloseEditProjectClick(e);
+                } else if (deleteModalClicked) {
+                    handleCloseDeleteModal();
+                } else if (newTaskClicked) {
+                    handleCloseNewTask();
+                } else if (userClicked) {
+                    handleUserCloseClick();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleEscapeKey);
+        return () => window.removeEventListener('keydown', handleEscapeKey);
+    }, [newProjectClicked, editProjectClicked, deleteModalClicked, newTaskClicked, userClicked]);
 
     // api calls
 
@@ -1161,6 +1184,7 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="dashboard-right-wrapper">
+                <ThemeToggle />
                 <LogoutIcon className="icon" onClick={(e) => handleUserClick(e)} />
             </div>
         </div>
