@@ -112,11 +112,8 @@ body {
   justify-content: space-between;
   animation: fadeInUp 0.8s ease-out 0.5s backwards;
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
   padding: 12px 20px;
   border-radius: var(--button-radius);
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .icon-wrapper:hover {
@@ -137,9 +134,7 @@ body {
 #outlined-basic4,
 #outlined-reset-email,
 #outlined-basic-confirm {
-  background-color: var(--secondary-bg);
   border-radius: var(--button-radius) !important;
-  box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
 }
 
