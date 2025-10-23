@@ -4,13 +4,10 @@ import "react-toastify/dist/ReactToastify.css";
 import type { AppProps } from "next/app";
 import { ToastContainer } from "react-toastify";
 import { AuthContextProvider } from "@/context/AuthContext";
-import { ThemeProvider, useThemeMode } from "@/context/ThemeContext";
 
-function AppContent({ Component, pageProps }: AppProps) {
-  const { mode } = useThemeMode();
-
+export default function App({ Component, pageProps }: AppProps) {
   return (
-    <>
+    <AuthContextProvider>
       <Component {...pageProps} />
       <ToastContainer
         position="top-center"
@@ -22,21 +19,11 @@ function AppContent({ Component, pageProps }: AppProps) {
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme={mode}
+        theme="light"
         style={{
           top: '20px',
         }}
       />
-    </>
-  );
-}
-
-export default function App(props: AppProps) {
-  return (
-    <ThemeProvider>
-      <AuthContextProvider>
-        <AppContent {...props} />
-      </AuthContextProvider>
-    </ThemeProvider>
+    </AuthContextProvider>
   );
 }

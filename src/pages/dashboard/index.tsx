@@ -28,7 +28,6 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/components/firebase";
 import CircularIndeterminate from "@/components/Loader/Loader";
 import Stopwatch from "@/components/Stopwatch/Stopwatch";
-import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 
 interface NewTask {
     heading: string;
@@ -1184,7 +1183,6 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="dashboard-right-wrapper">
-                <ThemeToggle />
                 <LogoutIcon className="icon" onClick={(e) => handleUserClick(e)} />
             </div>
         </div>

@@ -10,7 +10,6 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import InputIcon from "@mui/icons-material/Input";
 import { UserAuth } from "@/context/AuthContext";
 import CircularIndeterminate from "@/components/Loader/Loader";
-import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 
 export default function Home() {
   const { user } = UserAuth();
@@ -53,9 +52,6 @@ export default function Home() {
       </Head>
       <main>
         <div className="landing-container">
-          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10 }}>
-            <ThemeToggle />
-          </div>
           <div className="landing-left-wrapper">
             {showForgotPassword ? (
               <ForgotPassword setLoading={setLoading} onBack={handleBackToLogin} />
